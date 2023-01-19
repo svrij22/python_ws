@@ -1,6 +1,7 @@
 import patient
 from icu import IcuDepartment
 from settings import Settings
+import os
 
 #Create ICU
 settings = Settings()
@@ -10,7 +11,7 @@ sICU = IcuDepartment()
 current_HOUR = 0
 
 #Define the interval between current and the next patient
-interval_NEXT_PATIENT_stack = patient.new_patient_interval()
+interval_NEXT_PATIENT_stack = patient.new_patient_interval(False)
 
 #Define the step() method
 def step():
@@ -25,17 +26,18 @@ def step():
     sICU.hours_has_passed()
 
     #ICU do rescheduling
-    sICU.work_reschedule_stack()
+    sICU.work_schedule()
 
     #Patient spawning logic
     while(interval_NEXT_PATIENT_stack <= 0):
         
         #Set new interval
-        new_patient_interval = patient.new_patient_interval()
+        new_patient_interval = patient.new_patient_interval(False)
         interval_NEXT_PATIENT_stack += new_patient_interval
 
-        #DEBUG
-        print('Next patient in {} hours'.format(str(new_patient_interval)))
+        #===============DEBUG==================
+        if (settings.display_debug_msgs):
+            print('Next patient in {} hours'.format(str(new_patient_interval)))
 
         #Create patient
         nPatient = patient.new_patient()
@@ -45,8 +47,7 @@ def step():
 
 
 #Define sim vars
-vRUN_FOR_DAYS = 365 * 2;
-vIS_STEPS = int((vRUN_FOR_DAYS * 24) / settings.step_size_hour)
+vIS_STEPS = int((settings.simulator_days * 24) / settings.step_size_hour)
 
 #run
 def run():
@@ -57,8 +58,12 @@ def run():
         #run step
         step()
 
-        #desc state short
-        sICU.describe_state_short()
+        #===============DEBUG==================
+        #state msgs
+        if (settings.display_debug_msgs):
+            
+            #desc state short
+            sICU.describe_state_short()
 
 
 def stats():

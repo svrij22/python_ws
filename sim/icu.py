@@ -1,5 +1,6 @@
-from patient import Reschedule
+from patient import ScheduledPatient
 from settings import Settings
+import patient
 
 #PATIENT CLASS
 class IcuBed:
@@ -40,7 +41,7 @@ class IcuDepartment:
     def __init__(self):
         
         #INIT Reschedules
-        self.reschedules_stack = []
+        self.schedules_stack = patient.new_patient_schedule_stack()
 
         #INIT settings
         self.settings = Settings()
@@ -68,8 +69,13 @@ class IcuDepartment:
     # return percentage available
     def perc_avail(self):
         avail = [x for x in self.ICUBeds if not x.is_occupied()]
-        return avail.count() / AMOUNT_OF_BEDS
+        return avail.count() / self.settings.amount_of_icu_beds
 
+
+#
+# State and hours passed
+#
+#
 
     #subtract hours from patients and remove from beds
     def hours_has_passed(self):
@@ -141,57 +147,58 @@ class IcuDepartment:
 
     #reschedule patient
     def reschedule_patient(self, patient):
-        self.reschedules_stack.append(Reschedule(patient, self.settings.hours_between_reschedule))
+        self.schedules_stack.append(ScheduledPatient(patient, self.settings.hours_between_reschedule))
         self.stat_patients_RESCHEDULED += 1;
 
 #
-# RESCHEDULING
+# SCHEDULING
 #
 #
     #work reschedule stack
-    def work_reschedule_stack(self):
+    def work_schedule(self):
         
         #Work reschedule stack
-        for res in self.reschedules_stack:
+        for sched in self.schedules_stack:
 
-            #add to total waiting time / subtract hours
-            self.stat_total_waiting_time += res.hoursToGo           
-            res.hours_has_passed(self.settings.step_size_hour)
+            #add to total waiting time
+            if (sched.is_rescheduled):
+                self.stat_total_waiting_time += sched.hoursToGo
 
-            #check if should be replanned
-            if (res.should_be_replanned()):                         
+            #subtract hours
+            sched.hours_has_passed(self.settings.step_size_hour)
+
+            #check if should be rescheduled
+            if (sched.should_be_rescheduled()):                         
 
                 #add attempts and try
-                res.attempts += 1;
-                self.try_reschedule(res)
+                self.try_reschedule(sched)
 
         #Remove patients that have been replanned
-        self.reschedules_stack = [x for x in self.reschedules_stack if not x.should_be_removed()]
+        self.schedules_stack = [x for x in self.schedules_stack if not x.should_be_removed()]
 
     #attempt to reschedule
-    def try_reschedule(self, reschedule):
+    def try_reschedule(self, scheduled_p):
 
         #try add patient
-        is_succesful = self.try_adm_patient(reschedule.patient, False)  
+        is_succesful = self.try_adm_patient(scheduled_p.patient, False)  
         if (is_succesful):
 
             #remove and add var
-            reschedule.remove_me = True;
+            scheduled_p.remove_me = True;
             self.stat_succesful_RESCHEDULES += 1;
 
         else:
 
             #max attempts reached
-            if (reschedule.attempts > self.settings.max_allowed_reschedule_attempts):
+            if (scheduled_p.attempts > self.settings.max_allowed_reschedule_attempts):
                 
                 #remove and add var
-                reschedule.remove_me = True
+                scheduled_p.remove_me = True
                 self.stat_failed_RESCHEDULES += 1;
                 self.stat_patients_DENIED += 1;
 
             else:
-
-                #re-set clock
-                reschedule.hoursToGo = self.settings.hours_between_reschedule
+                
+                scheduled_p.reschedule(self.settings.hours_between_reschedule)
                     
 

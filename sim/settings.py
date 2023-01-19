@@ -9,3 +9,9 @@ class Settings:
         #Define the step size of the simulation
         self.step_size_hour = 6
         self.amount_of_icu_beds = 28
+
+        #sim settings
+        self.simulator_days = 365 * 2
+
+        self.debug_sleep = 0
+        self.display_debug_msgs = False
