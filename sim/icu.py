@@ -58,6 +58,8 @@ class IcuDepartment:
         self.stat_patients_ADMISSIONED = 0
         self.stat_failed_RESCHEDULES = 0
         self.stat_succesful_RESCHEDULES = 0
+        self.stat_total_bed_occupation = 0
+        self.stat_planned = len(self.schedules_stack)
 
     #Check if has space
     def has_space(self):
@@ -88,6 +90,9 @@ class IcuDepartment:
                 patient = bed.get_patient()
                 patient.hours_has_passed(self.settings.step_size_hour)
 
+                #add total bed occupation
+                self.stat_total_bed_occupation += self.settings.step_size_hour
+
                 #disc if needed
                 if (patient.should_be_discharged()):
                     bed.clear()
@@ -108,6 +113,8 @@ class IcuDepartment:
     def describe_state_short(self):
         occup = [x for x in self.ICUBeds if x.is_occupied()]
         print("{} of {} beds occupied".format(str(len(occup)), str(self.settings.amount_of_icu_beds)))
+        rescheduled = [x for x in self.schedules_stack if x.has_been_rescheduled]
+        print("{} scheduled. {} reschuled.".format(str(len(self.schedules_stack)), str(len(rescheduled))))
 
 #
 # ADDING PATIENTS
@@ -161,23 +168,26 @@ class IcuDepartment:
         for sched in self.schedules_stack:
 
             #add to total waiting time
-            if (sched.is_rescheduled):
+            if (sched.has_been_rescheduled):
                 self.stat_total_waiting_time += sched.hoursToGo
 
             #subtract hours
             sched.hours_has_passed(self.settings.step_size_hour)
 
-            #check if should be rescheduled
-            if (sched.should_be_rescheduled()):                         
+            #if schedule hours to go is lower than 0
+            if (sched.hoursToGo < 0):
 
-                #add attempts and try
-                self.try_reschedule(sched)
+                #check if should be rescheduled
+                if (sched.should_be_executed()):                         
+
+                    #add attempts and try
+                    self.try_execute_schedule(sched)
 
         #Remove patients that have been replanned
         self.schedules_stack = [x for x in self.schedules_stack if not x.should_be_removed()]
 
     #attempt to reschedule
-    def try_reschedule(self, scheduled_p):
+    def try_execute_schedule(self, scheduled_p):
 
         #try add patient
         is_succesful = self.try_adm_patient(scheduled_p.patient, False)  
@@ -185,7 +195,14 @@ class IcuDepartment:
 
             #remove and add var
             scheduled_p.remove_me = True;
-            self.stat_succesful_RESCHEDULES += 1;
+
+            #if is rescheduled
+            if (scheduled_p.has_been_rescheduled):
+                self.stat_succesful_RESCHEDULES += 1;
+
+            #===============DEBUG==================
+            if (self.settings.display_debug_msgs):
+                print('Scheduled patient admissioned')
 
         else:
 
@@ -196,6 +213,10 @@ class IcuDepartment:
                 scheduled_p.remove_me = True
                 self.stat_failed_RESCHEDULES += 1;
                 self.stat_patients_DENIED += 1;
+                
+                #===============DEBUG==================
+                if (self.settings.display_debug_msgs):
+                    print('Scheduled patient reached max admission attempts')
 
             else:
                 

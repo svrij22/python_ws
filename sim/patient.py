@@ -7,8 +7,8 @@ from settings import Settings
 SETTINGS = Settings()
 
 #INTERVAL
-EXPO_VARIABLE_UNPLANNED = 4.510619958847755
-EXPO_VARIABLE_PLANNED = 3.5689520791638496
+EXPO_VARIABLE_UNPLANNED = 6.492049279835394
+EXPO_VARIABLE_PLANNED = 11.659628456007704
 def new_patient_interval(isPlanned):
     if (isPlanned):
         return np.random.exponential(EXPO_VARIABLE_PLANNED)
@@ -52,7 +52,7 @@ class ScheduledPatient:
         self.hoursToGo = hours
         
         #Is rescheduled
-        self.is_rescheduled = False
+        self.has_been_rescheduled = False
 
         #Rescheduling
         self.attempts = 0
@@ -60,13 +60,13 @@ class ScheduledPatient:
 
     def reschedule(self, when):
         self.attempts += 1
-        self.is_rescheduled = True
+        self.has_been_rescheduled = True
         self.hoursToGo = when
         
     def hours_has_passed(self, hours):
         self.hoursToGo -= hours
 
-    def should_be_rescheduled(self):
+    def should_be_executed(self):
         return (self.hoursToGo < 0)
 
     def should_be_removed(self):
@@ -102,12 +102,12 @@ def new_patient_schedule_stack():
     while(total_hours_togo >= 0):
         
         #ff time
-        hour_delta = new_prodecure_length()
+        hour_delta = new_patient_interval(True)
         current_hour += hour_delta
         total_hours_togo -= hour_delta
 
         #create schedule
-        patient = new_patient()
+        patient = new_patient(True)
         scheduled = ScheduledPatient(patient, current_hour)
         patient_stack.append(scheduled)
     
@@ -115,10 +115,7 @@ def new_patient_schedule_stack():
     return patient_stack
 
 #PATIENT FACTORY METHOD
-def new_patient():
-
-    #Get if is planned
-    isPlanned = rand_is_planned()
+def new_patient(isPlanned):
     
     #Get stay length
     hoursToGo = new_prodecure_length()
