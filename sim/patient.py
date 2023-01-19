@@ -3,9 +3,13 @@ import numpy as np
 import random
 
 #INTERVAL
-EXPO_VARIABLE = 3.8
-def new_patient_interval():
-    return np.random.exponential(EXPO_VARIABLE)
+EXPO_VARIABLE_UNPLANNED = 4.510619958847755
+EXPO_VARIABLE_PLANNED = 3.5689520791638496
+def new_patient_interval(isPlanned):
+    if (isPlanned):
+        return np.random.exponential(EXPO_VARIABLE)
+    else:
+        return np.random.exponential(EXPO_VARIABLE)
 
 #Time on ICU
 #Return value in HOURS
@@ -40,7 +44,7 @@ class Reschedule:
         self.hoursToGo = hours
         
         self.attempts = 0
-        self.vshould_be_removed = False
+        self.remove_me = False
         
     def hours_has_passed(self, hours):
         self.hoursToGo -= hours
@@ -49,7 +53,7 @@ class Reschedule:
         return (self.hoursToGo < 0)
 
     def should_be_removed(self):
-        return self.vshould_be_removed
+        return self.remove_me
         
 #PATIENT CLASS
 class Patient:
