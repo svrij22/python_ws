@@ -1,75 +1,102 @@
 from patient import ScheduledPatient
+from patient import Patient
 from settings import Settings
 import patient
+import typing
 
-#PATIENT CLASS
 class IcuBed:
     def __init__(self):
-        self.patient = {}
-        self.occupied = False
+        """
+        Initialize an ICU bed object with empty patient and occupied status set to False
+        """
+        self.patient: Patient = {}
+        self.occupied: bool = False
 
-    #check if is occupied
-    def is_occupied(self):
+    def is_occupied(self) -> bool:
+        """
+        Check if the bed is currently occupied
+        :return: bool
+        """
         return self.occupied
 
-    #get patient
-    def get_patient(self):
+    def get_patient(self) -> Patient:
+        """
+        Get the patient assigned to the bed
+        :raises: Exception if the bed is empty
+        :return: dict
+        """
         if not (self.occupied):
             raise Exception("Bed is empty")
         return self.patient
 
-    #clear bed
     def clear(self):
+        """
+        Clear the patient and set occupied status to False
+        """
         self.patient = {}
         self.occupied = False
-        
-    #set patient
-    def set_patient(self, patient):
+
+    def set_patient(self, patient: dict):
+        """
+        Set patient to the bed
+        :raises: Exception if the bed is already occupied
+        :param patient: dict
+        """
         if (self.occupied):
             raise Exception("Bed is occupied")
 
         self.patient = patient
         self.occupied = True
 
-    #print self
     def print_self(self):
+        """
+        Print the occupied status of the bed
+        """
         print('icu bed is is occupied ' + str(self.occupied))
 
 class IcuDepartment:
 
-    #Init
     def __init__(self):
-        
+        """
+        Initialize an ICU department object with empty schedules stack, settings, beds, and statistics
+        """
         #INIT Reschedules
         self.schedules_stack = patient.new_patient_schedule_stack()
 
         #INIT settings
-        self.settings = Settings()
+        self.settings: Settings = Settings()
 
         #INIT BEDS
-        self.ICUBeds = []
+        self.ICUBeds: typing.List[IcuBed] = []
         for x in range(self.settings.amount_of_icu_beds):
             self.ICUBeds.append(IcuBed())
 
         #INIT STATS
-        self.stat_total_waiting_time = 0 # hours
-        self.stat_patients_RESCHEDULED = 0
-        self.stat_patients_DENIED = 0
-        self.stat_patients_ADMISSIONED = 0
-        self.stat_failed_RESCHEDULES = 0
-        self.stat_succesful_RESCHEDULES = 0
-        self.stat_total_bed_occupation = 0
-        self.stat_planned = len(self.schedules_stack)
+        self.stat_total_waiting_time: int = 0 # hours
+        self.stat_patients_RESCHEDULED: int = 0
+        self.stat_patients_DENIED: int = 0
+        self.stat_patients_ADMISSIONED: int = 0
+        self.stat_failed_RESCHEDULES: int = 0
+        self.stat_succesful_RESCHEDULES: int = 0
+        self.stat_total_bed_occupation: int = 0
+        self.stat_planned: int = len(self.schedules_stack)
 
-    #Check if has space
-    def has_space(self):
+    def has_space(self) -> bool:
+        """
+        Check if the ICU department has any available beds
+        :return: bool
+        """
         for x in self.ICUBeds:
             if not (x.is_occupied()):
                 return True
         return False
 
-    # return percentage available
-    def perc_avail(self):
+    
+    def perc_avail(self) -> float:
+        """
+        Get the percentage of available beds
+        :return: float
+        """
         avail = [x for x in self.ICUBeds if not x.is_occupied()]
         return avail.count() / self.settings.amount_of_icu_beds
 
@@ -79,9 +106,10 @@ class IcuDepartment:
 #
 #
 
-    #subtract hours from patients and remove from beds
     def hours_has_passed(self):
-
+        """
+        Subtract hours from patients and remove them from beds if they should be discharged
+        """
         # for each bed -> is occup -> get patient -> subtract
         for bed in self.ICUBeds:
             if (bed.is_occupied()):
@@ -146,8 +174,9 @@ class IcuDepartment:
         else:
 
             # if its planned add to reschedule stack
-            if (shouldRescheduleIfPlanned and patient.isPlanned):
-                self.reschedule_patient(patient)
+            if (patient.isPlanned):
+                if (shouldRescheduleIfPlanned):
+                    self.reschedule_patient(patient)
             else:
                 self.stat_patients_DENIED +=1
             return False
@@ -175,7 +204,7 @@ class IcuDepartment:
             sched.hours_has_passed(self.settings.step_size_hour)
 
             #if schedule hours to go is lower than 0
-            if (sched.hoursToGo < 0):
+            if (sched.hoursToGo <= 0):
 
                 #check if should be rescheduled
                 if (sched.should_be_executed()):                         

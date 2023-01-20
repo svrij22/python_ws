@@ -7,8 +7,8 @@ from settings import Settings
 SETTINGS = Settings()
 
 #INTERVAL
-EXPO_VARIABLE_UNPLANNED = 6.492049279835394
-EXPO_VARIABLE_PLANNED = 11.659628456007704
+EXPO_VARIABLE_UNPLANNED = 6.492049279835394 # mean of delta time data
+EXPO_VARIABLE_PLANNED = 11.659628456007704 # mean of delta time data
 def new_patient_interval(isPlanned):
     if (isPlanned):
         return np.random.exponential(EXPO_VARIABLE_PLANNED)

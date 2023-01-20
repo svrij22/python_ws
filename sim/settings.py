@@ -18,4 +18,4 @@ class Settings:
         self.simulator_days = 365 * 2
         
         self.debug_sleep = 0
-        self.display_debug_msgs = True
+        self.display_debug_msgs = False
