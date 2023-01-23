@@ -1,7 +1,9 @@
 import patient
+from animate import Animator
 from icu import IcuDepartment
 from settings import Settings
 import os
+import matplotlib.pyplot as plt
 
 #Create ICU
 settings = Settings()
@@ -56,6 +58,10 @@ vIS_STEPS = int((settings.simulator_days * 24) / settings.step_size_hour)
 
 #run
 def run():
+    if settings.animator_enabled:
+        plt.ion()
+        fig, ax = plt.subplots(figsize=(10, 8))
+        animator = Animator(ax, vIS_STEPS)
 
     #all steps
     for x in range(vIS_STEPS):
@@ -63,13 +69,15 @@ def run():
         #run step
         step()
 
+        if settings.animator_enabled and x % settings.plot_graph_interval == 0:
+            animator.plot(x, sICU.occupied_icu_beds)
+
         #===============DEBUG==================
         #state msgs
         if (settings.display_debug_msgs):
             
             #desc state short
             sICU.describe_state_short()
-
 
 def stats():
     print("patients denied: " +         str(sICU.stat_patients_DENIED))
@@ -85,5 +93,9 @@ def stats():
     print("patients (planned): " +      str(sICU.stat_planned))
     print("patients (unplanned): " +   str(stat_unplanned))
 
+
+
 run()
 stats()
+
+input("Press enter to exit.")

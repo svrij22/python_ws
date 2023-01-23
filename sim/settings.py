@@ -19,3 +19,8 @@ class Settings:
         
         self.debug_sleep = 0
         self.display_debug_msgs = False
+
+        # == Animation Settings == 
+        # Set the amount of steps that have to pass before a new point is plotted
+        self.plot_graph_interval = 10
+        self.animator_enabled = True

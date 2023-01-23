@@ -80,6 +80,7 @@ class IcuDepartment:
         self.stat_succesful_RESCHEDULES: int = 0
         self.stat_total_bed_occupation: int = 0
         self.stat_planned: int = len(self.schedules_stack)
+        self.occupied_icu_beds: int = 0
 
     def has_space(self) -> bool:
         """
@@ -124,6 +125,7 @@ class IcuDepartment:
                 #disc if needed
                 if (patient.should_be_discharged()):
                     bed.clear()
+                    self.occupied_icu_beds -= 1
 
 
     #print the icu dept. state
@@ -170,6 +172,7 @@ class IcuDepartment:
             #add patient
             self.add_patient(patient)
             self.stat_patients_ADMISSIONED += 1
+            self.occupied_icu_beds += 1
             return True
         else:
 
