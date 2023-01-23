@@ -34,13 +34,6 @@ def new_specialism(isPlanned):
 PATIENT_AMOUNT = 4199
 PATIENT_IS_PLANNED_AMOUNT = 1499
 
-#Return is planned
-#Return value in BOOL
-def rand_is_planned():
-    if (random.randrange(0, 4199) < 1499):
-        return True
-    return False
-
 #Define patients to reschedule
 class ScheduledPatient:
 
@@ -60,6 +53,8 @@ class ScheduledPatient:
         self.remove_me = False
 
     def reschedule(self, when):
+        if (self.hoursToGo > 0):
+            raise Exception("Schedule has not passed execution point yet")
         self.attempts += 1
         self.has_been_rescheduled = True
         self.hoursToGo = when
@@ -68,7 +63,7 @@ class ScheduledPatient:
         self.hoursToGo -= hours
 
     def should_be_executed(self):
-        return (self.hoursToGo < 0)
+        return (self.hoursToGo <= 0)
 
     def should_be_removed(self):
         return self.remove_me
@@ -116,7 +111,7 @@ def new_patient_schedule_stack():
     return patient_stack
 
 #PATIENT FACTORY METHOD
-def new_patient(isPlanned):
+def new_patient(isPlanned) -> Patient:
     
     #Get stay length
     hoursToGo = new_prodecure_length()

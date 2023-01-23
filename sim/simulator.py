@@ -94,7 +94,6 @@ def stats():
     print("patients (unplanned): " +   str(stat_unplanned))
 
 
-
 run()
 stats()
 
