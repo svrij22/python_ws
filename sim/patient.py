@@ -8,12 +8,13 @@ SETTINGS = Settings()
 
 #INTERVAL
 EXPO_VARIABLE_UNPLANNED = 6.402049279835394 # mean of delta time data
+EXPO_VARIABLE_UNPLANNED_W_DENIED = 5.9849999051952985 # mean of delta time data with unplanned and denied patients
 EXPO_VARIABLE_PLANNED = 11.659628456007704 # mean of delta time data
 def new_patient_interval(isPlanned):
     if (isPlanned):
         return np.random.exponential(EXPO_VARIABLE_PLANNED)
     else:
-        return np.random.exponential(EXPO_VARIABLE_UNPLANNED)
+        return np.random.exponential(EXPO_VARIABLE_UNPLANNED_W_DENIED)
 
 #Time on ICU
 #Return value in HOURS
