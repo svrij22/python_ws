@@ -50,7 +50,7 @@ def step():
         nPatient = patient.new_patient(False)
 
         #try add patient
-        sICU.try_adm_patient(nPatient, True)
+        sICU.try_adm_patient(nPatient)
 
 
 #Define sim vars
@@ -70,7 +70,7 @@ def run():
         step()
 
         if settings.animator_enabled and x % settings.plot_graph_interval == 0:
-            animator.plot(x, sICU.occupied_icu_beds)
+            animator.plot(x, sICU.occupied_num())
 
         #===============DEBUG==================
         #state msgs

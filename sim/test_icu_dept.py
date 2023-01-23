@@ -78,6 +78,173 @@ class DataTests(unittest.TestCase):
 
         #is full
         self.assertTrue(dept.has_space())
+        
+    def test_dept_created_beds(self):
+
+        #create dept
+        dept = IcuDepartment()
+
+        #is amount_of_icu_beds
+        self.assertTrue(len(dept.ICUBeds) == dept.settings.amount_of_icu_beds)
+
+    def getReScheduledPatient(self) -> ScheduledPatient:
+
+        #create patient
+        nPatient = patient.new_patient(True);
+
+        #create schedule
+        reSched = ScheduledPatient(nPatient, 1000);
+        reSched.has_been_rescheduled = True;
+
+        return reSched;
+
+    # this test actually made me realize i made a mistake
+
+    def test_STAT_total_waiting_time(self):
+        
+        #create dept
+        dept = IcuDepartment()
+        dept.settings.step_size_hour = 100;
+
+        #fill dept
+        for x in range(dept.settings.amount_of_icu_beds):
+            dept.add_patient(patient.new_patient(True))
+
+        #fill schedule
+        dept.schedules_stack = [self.getReScheduledPatient() for x in range(5)]
+
+        #work schedule
+        dept.work_schedule()
+
+        #assert equals
+        self.assertEqual(dept.stat_total_waiting_time, 5 * 100)
+
+    def test_STAT_patients_RESCHEDULED_zero(self):
+        
+        #create dept
+        dept = IcuDepartment()
+        dept.settings.step_size_hour = 100;
+
+        #fill dept
+        for x in range(dept.settings.amount_of_icu_beds):
+            dept.add_patient(patient.new_patient(True))
+
+        #fill schedule
+        dept.schedules_stack = [self.getReScheduledPatient() for x in range(5)]
+
+        #work schedule
+        dept.work_schedule()
+
+        #assert equals
+        self.assertEqual(dept.stat_patients_RESCHEDULED, 0)
+        
+    def test_STAT_patients_RESCHEDULED_all(self):
+        
+        #create dept
+        dept = IcuDepartment()
+        dept.settings.step_size_hour = 1000;
+
+        #fill dept
+        for x in range(dept.settings.amount_of_icu_beds):
+            dept.add_patient(patient.new_patient(True))
+
+        #fill schedule
+        dept.schedules_stack = [self.getReScheduledPatient() for x in range(5)]
+
+        #work schedule
+        dept.work_schedule()
+
+        #assert equals
+        self.assertEqual(dept.stat_patients_RESCHEDULED, 5)
+        
+    # same here
+    
+    def test_STAT_patients_max_allowed_reschedule_attempts(self):
+        
+        #create dept
+        dept = IcuDepartment()
+        dept.settings.step_size_hour = 1000;
+
+        #fill dept
+        for x in range(dept.settings.amount_of_icu_beds):
+            dept.add_patient(patient.new_patient(True))
+
+        #fill schedule
+        dept.schedules_stack = [self.getReScheduledPatient() for x in range(5)]
+
+        #work schedule
+        for x in range(dept.settings.max_allowed_reschedule_attempts):
+            dept.work_schedule()
+
+        #assert equals
+        self.assertEqual(len(dept.schedules_stack), 0)
+        self.assertEqual(dept.stat_failed_RESCHEDULES, 5)
+        self.assertEqual(dept.stat_succesful_RESCHEDULES, 0)
+    
+    def test_STAT_patients_admissioned(self):
+        
+        #create dept
+        dept = IcuDepartment()
+        dept.settings.step_size_hour = 1000;
+
+        #fill dept
+        for x in range(dept.settings.amount_of_icu_beds):
+            dept.try_adm_patient(patient.new_patient(True))
+
+        #assert equals
+        self.assertEqual(dept.stat_patients_ADMISSIONED, dept.settings.amount_of_icu_beds)
+
+    def test_STAT_patients_admissioned_EXCEPTION_add(self):
+        
+        #create dept
+        dept = IcuDepartment()
+        dept.settings.step_size_hour = 1000;
+
+        #fill dept
+        for x in range(dept.settings.amount_of_icu_beds):
+            dept.try_adm_patient(patient.new_patient(True))
+
+        #assert equals
+        self.assertEqual(dept.stat_patients_ADMISSIONED, dept.settings.amount_of_icu_beds)
+
+        #assert exception
+        with self.assertRaises(Exception):
+            dept.add_patient(patient.new_patient(True));
+
+    def test_STAT_patients_DENIED(self):
+        
+        #create dept
+        dept = IcuDepartment()
+
+        #fill dept
+        for x in range(dept.settings.amount_of_icu_beds):
+            dept.try_adm_patient(patient.new_patient(True))
+
+        #add 50 non planned patients
+        for x in range(50):
+            dept.try_adm_patient(patient.new_patient(False))
+
+        #assert equals
+        self.assertEqual(dept.stat_patients_DENIED, 50)
+
+    def test_STAT_total_bed_occup(self):
+        
+        #create dept
+        dept = IcuDepartment()
+        dept.settings.step_size_hour = 1;
+
+        #fill dept
+        for x in range(dept.settings.amount_of_icu_beds):
+            dept.try_adm_patient(patient.new_patient(True))
+
+        #pass hours
+        hours_passed = 0
+        while(dept.occupied_num() > 0):
+            hours_passed += dept.occupied_num() * dept.settings.step_size_hour
+            dept.hours_has_passed()
+
+        #assert equals
+        self.assertEqual(dept.stat_total_bed_occupation, hours_passed)
 
 
 if __name__ == '__main__':
