@@ -11,10 +11,15 @@ SETTINGS = Settings()
 # INTERVAL unplanned
 EXPO_VARIABLE_UNPLANNED = 6.402049279835394  # mean of delta time data
 EXPO_VARIABLE_UNPLANNED_W_DENIED = 5.9849999051952985  # mean of delta time data with unplanned and denied patients
+
 # INTERVAL planned by weekday
-EXPO_VARIABLE_PLANNED = {'Monday': 17.94640769230795, 'Tuesday': 10.122215470678965, 'Wednesday': 10.820380658435843,
-                         'Thursday': 7.472981164925745, 'Friday': 8.705045970266005, 'Saturday': 19.65161290322571,
-                         'Sunday': 31.28867424242344}  # means of delta time data by weekday
+EXPO_VARIABLE_PLANNED = {'Monday': 16.94640769230795, 
+                        'Tuesday': 9.122215470678965, 
+                        'Wednesday': 9.820380658435843,
+                         'Thursday': 6.472981164925745, 
+                         'Friday': 7.705045970266005, 
+                         'Saturday': 18.65161290322571,
+                         'Sunday': 29.28867424242344}  # means of delta time data by weekday
 
 
 def new_patient_interval(isPlanned, weekday):
@@ -137,6 +142,35 @@ def new_patient_schedule_stack():
         patient = new_patient(True, weekday)
         scheduled = ScheduledPatient(patient, current_hour)
         patient_stack.append(scheduled)
+
+    # return stack
+    return patient_stack
+    
+def new_patient_schedule_stack_new():
+
+    # define list
+    patient_stack = []
+
+    # for each day
+    for day in weekdays:
+
+        # calc hours
+        day_hours_togo = SETTINGS.simulator_days * 24 / 7
+        current_hour = 0
+
+        while (day_hours_togo >= 0):
+
+            # ff time
+            hour_delta = new_patient_interval(True, day)
+            current_hour += hour_delta
+            day_hours_togo -= hour_delta
+
+            # create schedule
+            patient = new_patient(True, day)
+            scheduled = ScheduledPatient(patient, current_hour)
+            patient_stack.append(scheduled)
+
+    #
 
     # return stack
     return patient_stack

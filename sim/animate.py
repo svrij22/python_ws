@@ -1,15 +1,20 @@
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
+import numpy as np
+from matplotlib import colors
 
+cmap = colors.ListedColormap(['white', 'blue'])
 
 class Animator:
+
     def __init__(self, ax: Axes, x_lim: int):
         self.x = []
         self.y = []
+
         self.ax = ax
         self.x_lim = x_lim
 
-    def plot(self, x, y):
+    def plot(self, step, value):
         self.x.append(x)
         self.y.append(y)
 

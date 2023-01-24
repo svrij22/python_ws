@@ -9,7 +9,7 @@ class DataTests(unittest.TestCase):
 
     def getPatient(self) -> Patient:
         # create patient
-        nPatient = patient.new_patient(True)
+        nPatient = patient.new_patient(True, 'Monday')
         return nPatient
 
     def getBed(self) -> IcuBed:

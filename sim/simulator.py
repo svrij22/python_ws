@@ -64,13 +64,13 @@ def run():
         animator = Animator(ax, vIS_STEPS)
 
     # all steps
-    for x in range(vIS_STEPS):
+    for step in range(vIS_STEPS):
 
         # run step
         step()
 
-        if settings.animator_enabled and x % settings.plot_graph_interval == 0:
-            animator.plot(x, sICU.occupied_num())
+        if settings.animator_enabled and step % settings.plot_graph_interval == 0:
+            animator.plot(step, sICU.occupied_num())
 
         # ===============DEBUG==================
         # state msgs
