@@ -98,7 +98,9 @@ def stats():
     print("patients (unplanned): " + str(stat_unplanned))
 
 
-run()
-stats()
+if __name__ == "__main__":
+    run()
+    stats()
 
-input("Press enter to exit.")
+    # Prevent animated window to close immediately upon finishing executing the simulation.
+    input("Press enter to exit.")
