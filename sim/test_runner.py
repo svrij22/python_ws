@@ -1,8 +1,8 @@
-import unittest
-import HtmlTestRunner
-import os
-import webbrowser
 import shutil
+import unittest
+
+import HtmlTestRunner
+
 loader = unittest.TestLoader()
 
 if __name__ == '__main__':
@@ -14,7 +14,7 @@ if __name__ == '__main__':
     start_dir = '.'
     suite = loader.discover(start_dir)
 
-    #run
+    # run
     runner = HtmlTestRunner.HTMLTestRunner(combine_reports=True, output='output', verbosity=2)
     runner.run(suite)
 

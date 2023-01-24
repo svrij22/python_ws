@@ -1,7 +1,5 @@
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
-import time
-from settings import Settings
 
 
 class Animator:
