@@ -1,4 +1,8 @@
 from typing import List
+import matplotlib as mpl
+import matplotlib.style as mplstyle
+mplstyle.use('fast')
+
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 import numpy as np
@@ -41,7 +45,7 @@ class Animator:
         self.ax[0,0].set_xlim([0, self.x_lim])
 
         #pause
-        plt.pause(0.01)
+        plt.pause(0.03)
 
     def plot_beds(self, step, values: List[IcuBed]):
 
@@ -117,5 +121,3 @@ class Animator:
         # and plot everything
         self.ax[0,1].clear()
         self.ax[0,1].voxels(bed_occup_array_3d, edgecolor='k')
-
-        plt.show()
