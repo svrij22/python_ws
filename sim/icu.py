@@ -202,6 +202,7 @@ class IcuDepartment:
             # add to total waiting time
             if (sched.has_been_rescheduled):
                 self.stat_total_waiting_time += self.settings.step_size_hour
+                sched.patient_waiting_time += self.settings.step_size_hour
 
             # subtract hours
             sched.hours_has_passed(self.settings.step_size_hour)

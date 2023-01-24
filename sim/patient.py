@@ -75,6 +75,7 @@ class ScheduledPatient:
 
         # Is rescheduled
         self.has_been_rescheduled = False
+        self.patient_waiting_time = 0;
 
         # Rescheduling
         self.attempts = 0
@@ -103,6 +104,9 @@ class Patient:
         self.isPlanned = isPlanned
         self.hoursToGo = hoursToGo
         self.specialism = specialism
+
+    def get_specialism(self):
+        return self.specialism
 
     def hours_has_passed(self, hours):
         self.hoursToGo -= hours

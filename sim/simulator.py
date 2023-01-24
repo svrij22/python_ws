@@ -55,22 +55,23 @@ def step():
 # Define sim vars
 vIS_STEPS = int((settings.simulator_days * 24) / settings.step_size_hour)
 
-
 # run
 def run():
+
+    # if animator
     if settings.animator_enabled:
-        plt.ion()
-        fig, ax = plt.subplots(figsize=(10, 8))
-        animator = Animator(ax, vIS_STEPS)
+        animator = Animator(vIS_STEPS)
 
     # all steps
-    for step in range(vIS_STEPS):
+    for step_var in range(vIS_STEPS):
 
         # run step
         step()
 
-        if settings.animator_enabled and step % settings.plot_graph_interval == 0:
-            animator.plot(step, sICU.occupied_num())
+        if settings.animator_enabled and step_var % settings.plot_graph_interval == 0:
+            animator.plot_occupied(step_var, sICU.occupied_num())
+            animator.plot_beds(step_var, sICU.ICUBeds)
+            animator.plot_rescheduled(sICU.schedules_stack)
 
         # ===============DEBUG==================
         # state msgs
