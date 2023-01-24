@@ -102,6 +102,8 @@ class ScheduledPatient:
 class Patient:
     def __init__(self, isPlanned, hoursToGo, specialism):
         self.isPlanned = isPlanned
+        
+        self.origHoursToGo = hoursToGo
         self.hoursToGo = hoursToGo
         self.specialism = specialism
 
@@ -110,6 +112,9 @@ class Patient:
 
     def hours_has_passed(self, hours):
         self.hoursToGo -= hours
+
+    def hours_on_icu(self):
+        return self.origHoursToGo - self.hoursToGo
 
     def should_be_discharged(self):
         return (self.hoursToGo < 0)

@@ -7,6 +7,8 @@ from matplotlib import colors
 from icu import IcuBed
 from patient import ScheduledPatient
 
+# This import registers the 3D projection, but is otherwise unused.
+from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 
 class Animator:
 
@@ -18,6 +20,7 @@ class Animator:
         #config
         plt.ion()
         self.fig, self.ax = plt.subplots(nrows=2, ncols=2, figsize=(10, 8))
+        self.ax[0,1] = self.fig.add_subplot(2,2,2,projection='3d')
 
         #set x and y for occupied
         self.occup_x = []
@@ -38,7 +41,7 @@ class Animator:
         self.ax[0,0].set_xlim([0, self.x_lim])
 
         #pause
-        plt.pause(0.05)
+        plt.pause(0.01)
 
     def plot_beds(self, step, values: List[IcuBed]):
 
@@ -80,5 +83,39 @@ class Animator:
         y_arr = [x.patient_waiting_time for x in rescheduled]
 
         #display
+        self.ax[1,1].clear()
+        self.ax[1,1].bar(x_arr, y_arr)
+
+    def plot_voxels(self, values: List[IcuBed]):
+
+        size = 6
+
+        # prepare some coordinates
+        x, y, z = np.indices((size, size, 20))
+        
+        #create array
+        bed_occup_array_3d = np.zeros((size, size, 20))
+        
+        #convert to 3d array
+        for index, bed in enumerate(values):
+
+            #get x and y
+            y_var = index % size
+            x_var = int(np.floor((index) / size))
+
+            # set 3d range
+            for i in range(20):
+                is_occup = bed.is_occupied()
+                disp_l = False
+                if (is_occup):
+                    max_hours = 120
+                    curr_hours = bed.get_patient().hours_on_icu()
+                    hour_i = np.floor(curr_hours / max_hours) + 1
+                    disp_l = i < hour_i 
+                bed_occup_array_3d[x_var][y_var][i] = is_occup & disp_l
+
+        # and plot everything
         self.ax[0,1].clear()
-        self.ax[0,1].bar(x_arr, y_arr)
+        self.ax[0,1].voxels(bed_occup_array_3d, edgecolor='k')
+
+        plt.show()

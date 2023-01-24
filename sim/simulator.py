@@ -72,6 +72,7 @@ def run():
             animator.plot_occupied(step_var, sICU.occupied_num())
             animator.plot_beds(step_var, sICU.ICUBeds)
             animator.plot_rescheduled(sICU.schedules_stack)
+            animator.plot_voxels(sICU.ICUBeds)
 
         # ===============DEBUG==================
         # state msgs
