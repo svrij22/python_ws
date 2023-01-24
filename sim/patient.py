@@ -1,18 +1,22 @@
 
 import numpy as np
 import random
+import math
 from settings import Settings
 
 #Create settings const
 SETTINGS = Settings()
 
-#INTERVAL
+#INTERVAL unplanned
 EXPO_VARIABLE_UNPLANNED = 6.402049279835394 # mean of delta time data
 EXPO_VARIABLE_UNPLANNED_W_DENIED = 5.9849999051952985 # mean of delta time data with unplanned and denied patients
-EXPO_VARIABLE_PLANNED = 11.659628456007704 # mean of delta time data
-def new_patient_interval(isPlanned):
+#INTERVAL planned by weekday
+EXPO_VARIABLE_PLANNED = {'Monday': 17.94640769230795, 'Tuesday': 10.122215470678965, 'Wednesday': 10.820380658435843,
+                         'Thursday': 7.472981164925745, 'Friday': 8.705045970266005, 'Saturday': 19.65161290322571,
+                         'Sunday': 31.28867424242344} # means of delta time data by weekday
+def new_patient_interval(isPlanned, weekday):
     if (isPlanned):
-        return np.random.exponential(EXPO_VARIABLE_PLANNED)
+        return np.random.exponential(EXPO_VARIABLE_PLANNED[weekday])
     else:
         return np.random.exponential(EXPO_VARIABLE_UNPLANNED_W_DENIED)
 
@@ -23,10 +27,19 @@ CALC_SIGMA = 1.3165461050924663
 def new_prodecure_length():
     return np.random.lognormal(CALC_MU, CALC_SIGMA)
 
+#Planned patient illness distribution by weekday
+EXPO_VARIABLE_PLANNED_ILLNESS = {'Monday': {'CAPU': 281, 'CHIR': 28, 'CARD': 0, 'INT': 2, 'NEC': 11, 'NEU': 3, 'OTHER': 0},
+                                 'Tuesday': {'CAPU': 240, 'CHIR': 41, 'CARD': 0, 'INT': 4, 'NEC': 2, 'NEU': 1, 'OTHER': 0},
+                                 'Wednesday': {'CAPU': 186, 'CHIR': 11, 'CARD': 1, 'INT': 4, 'NEC': 12, 'NEU': 1, 'OTHER': 1},
+                                 'Thursday': {'CAPU': 327, 'CHIR': 19, 'CARD': 0, 'INT': 0, 'NEC': 4, 'NEU': 1, 'OTHER': 0},
+                                 'Friday': {'CAPU': 252, 'CHIR': 14, 'CARD': 2, 'INT': 3, 'NEC': 12, 'NEU': 1, 'OTHER': 0},
+                                 'Saturday': {'CAPU': 18, 'CHIR': 4, 'CARD': 1, 'INT': 4, 'NEC': 3, 'NEU': 1, 'OTHER': 0},
+                                 'Sunday': {'CAPU': 11, 'CHIR': 3, 'CARD': 2, 'INT': 2, 'NEC': 3, 'NEU': 1, 'OTHER': 0}}
 #Generate specialism
-def new_specialism(isPlanned):
+def new_specialism(isPlanned, weekday):
     if (isPlanned):
-        return random.choices(['CAPU', 'CHIR', 'NEC', 'INT', 'NEU', 'CARD', 'OTHER'], weights=(1301, 118, 45, 19, 9, 6, 1))[0]
+        distribution = EXPO_VARIABLE_PLANNED_ILLNESS[weekday]
+        return random.choices(list(distribution.keys()), weights=tuple(distribution.values()))[0]
     else:
         return random.choices(['CAPU', 'CHIR', 'NEC', 'INT', 'NEU', 'CARD', 'OTHER'], weights=(997, 448, 426, 317, 309, 150, 53))[0]
 
@@ -87,6 +100,7 @@ class Patient:
         print('patient specialism ' + str(self.specialism))
 
 #generates a list of scheduled patients
+weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 def new_patient_schedule_stack():
 
     #calc hours
@@ -96,14 +110,18 @@ def new_patient_schedule_stack():
     #define list
     patient_stack = []
     while(total_hours_togo >= 0):
-        
+
+        #determine weekday
+        n_days = math.floor(current_hour / 24)
+        weekday = weekdays[n_days % 7]
+
         #ff time
-        hour_delta = new_patient_interval(True)
+        hour_delta = new_patient_interval(True, weekday)
         current_hour += hour_delta
         total_hours_togo -= hour_delta
 
         #create schedule
-        patient = new_patient(True)
+        patient = new_patient(True, weekday)
         scheduled = ScheduledPatient(patient, current_hour)
         patient_stack.append(scheduled)
     
@@ -111,16 +129,16 @@ def new_patient_schedule_stack():
     return patient_stack
 
 #PATIENT FACTORY METHOD
-def new_patient(isPlanned) -> Patient:
+def new_patient(isPlanned, weekday) -> Patient:
     
     #Get stay length
     hoursToGo = new_prodecure_length()
 
     #Get specialism
-    specialism = new_specialism(isPlanned)
+    specialism = new_specialism(isPlanned, weekday)
 
     #Create patient
     patient = Patient(isPlanned, hoursToGo, specialism)
 
     #Return patient
-    return patient;
+    return patient

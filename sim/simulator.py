@@ -14,7 +14,7 @@ current_HOUR = 0
 stat_unplanned = 0
 
 #Define the interval between current and the next patient
-interval_NEXT_PATIENT_stack = patient.new_patient_interval(False)
+interval_NEXT_PATIENT_stack = patient.new_patient_interval(False, None)
 
 #Define the step() method
 def step():
@@ -36,7 +36,7 @@ def step():
         
         
         #Set new interval
-        new_patient_interval = patient.new_patient_interval(False)
+        new_patient_interval = patient.new_patient_interval(False, None)
         interval_NEXT_PATIENT_stack += new_patient_interval
 
         #add unplanned
@@ -47,7 +47,7 @@ def step():
             print('next patient : {} hours'.format(str(new_patient_interval)))
 
         #Create patient
-        nPatient = patient.new_patient(False)
+        nPatient = patient.new_patient(False, None)
 
         #try add patient
         sICU.try_adm_patient(nPatient)
