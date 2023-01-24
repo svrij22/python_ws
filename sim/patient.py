@@ -18,7 +18,7 @@ EXPO_VARIABLE_PLANNED = {'Monday': 17.94640769230795, 'Tuesday': 10.122215470678
 
 
 def new_patient_interval(isPlanned, weekday):
-    if (isPlanned):
+    if isPlanned:
         return np.random.exponential(EXPO_VARIABLE_PLANNED[weekday])
     else:
         return np.random.exponential(EXPO_VARIABLE_UNPLANNED_W_DENIED)
@@ -47,7 +47,7 @@ EXPO_VARIABLE_PLANNED_ILLNESS = {
 
 # Generate specialism
 def new_specialism(isPlanned, weekday):
-    if (isPlanned):
+    if isPlanned:
         distribution = EXPO_VARIABLE_PLANNED_ILLNESS[weekday]
         return random.choices(list(distribution.keys()), weights=tuple(distribution.values()))[0]
     else:
@@ -78,7 +78,7 @@ class ScheduledPatient:
         self.remove_me = False
 
     def reschedule(self, when):
-        if (self.hoursToGo > 0):
+        if self.hoursToGo > 0:
             raise Exception("Schedule has not passed execution point yet")
         self.attempts += 1
         self.has_been_rescheduled = True
@@ -88,7 +88,7 @@ class ScheduledPatient:
         self.hoursToGo -= hours
 
     def should_be_executed(self):
-        return (self.hoursToGo <= 0)
+        return self.hoursToGo <= 0
 
     def should_be_removed(self):
         return self.remove_me
@@ -105,7 +105,7 @@ class Patient:
         self.hoursToGo -= hours
 
     def should_be_discharged(self):
-        return (self.hoursToGo < 0)
+        return self.hoursToGo < 0
 
     def print_self(self):
         print('patient is planned ' + str(self.isPlanned))
@@ -124,7 +124,7 @@ def new_patient_schedule_stack():
 
     # define list
     patient_stack = []
-    while (total_hours_togo >= 0):
+    while total_hours_togo >= 0:
         # determine weekday
         n_days = math.floor(current_hour / 24)
         weekday = weekdays[n_days % 7]
