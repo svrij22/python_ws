@@ -29,10 +29,8 @@ def new_patient_interval(isPlanned, weekday):
 CALC_MU = 3.50502901187668
 CALC_SIGMA = 1.3165461050924663
 
-
 def new_prodecure_length():
     return np.random.lognormal(CALC_MU, CALC_SIGMA)
-
 
 # Planned patient illness distribution by weekday
 EXPO_VARIABLE_PLANNED_ILLNESS = {
@@ -125,6 +123,7 @@ def new_patient_schedule_stack():
     # define list
     patient_stack = []
     while (total_hours_togo >= 0):
+
         # determine weekday
         n_days = math.floor(current_hour / 24)
         weekday = weekdays[n_days % 7]
