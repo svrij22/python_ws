@@ -7,7 +7,7 @@ class Settings:
 
         # Define the step size of the simulation
         self.step_size_hour = 6
-        self.amount_of_icu_beds = 10 # default 28
+        self.amount_of_icu_beds = 25 # default 28
 
         # Define properties for reservations. The first on is the maximum amount of reservations, the second is the
         # max time. E.g. if in the next 8 hours 4 people will undergo surgery, 4 beds will be kept free
