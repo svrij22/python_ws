@@ -1,5 +1,3 @@
-from typing import Optional
-
 import matplotlib.pyplot as plt
 
 import patient
@@ -24,8 +22,8 @@ def step():
     global current_HOUR, interval_NEXT_PATIENT_stack, stat_unplanned
 
     # TIME LOGIC
-    current_HOUR += settings.step_size_hour
-    interval_NEXT_PATIENT_stack -= settings.step_size_hour
+    current_HOUR += settings.step_size_hour;
+    interval_NEXT_PATIENT_stack -= settings.step_size_hour;
 
     # subtract hours from IcuDept
     sICU.hours_has_passed()
@@ -34,7 +32,7 @@ def step():
     sICU.work_schedule()
 
     # Patient spawning logic
-    while interval_NEXT_PATIENT_stack <= 0:
+    while (interval_NEXT_PATIENT_stack <= 0):
 
         # Set new interval
         new_patient_interval = patient.new_patient_interval(False, None)
@@ -44,41 +42,40 @@ def step():
         stat_unplanned += 1
 
         # ===============DEBUG==================
-        if settings.display_debug_msgs:
+        if (settings.display_debug_msgs):
             print('next patient : {} hours'.format(str(new_patient_interval)))
 
         # Create patient
         nPatient = patient.new_patient(False, None)
 
-        # try to add patient
+        # try add patient
         sICU.try_adm_patient(nPatient)
 
 
 # Define sim vars
 vIS_STEPS = int((settings.simulator_days * 24) / settings.step_size_hour)
 
-
 # run
 def run():
-    animator: Optional[Animator] = None
 
+    # if animator
     if settings.animator_enabled:
-        plt.ion()
-        fig, ax = plt.subplots(figsize=(10, 8))
-        animator = Animator(ax, vIS_STEPS)
+        animator = Animator(vIS_STEPS)
 
     # all steps
-    for x in range(vIS_STEPS):
+    for step_var in range(vIS_STEPS):
 
         # run step
         step()
 
-        if animator and x % settings.plot_graph_interval == 0:
-            animator.plot(x, sICU.occupied_num())
+        if settings.animator_enabled and step_var % settings.plot_graph_interval == 0:
+            animator.plot_occupied(step_var, sICU.occupied_num())
+            animator.plot_beds(step_var, sICU.ICUBeds)
+            animator.plot_rescheduled(sICU.schedules_stack)
 
         # ===============DEBUG==================
         # state msgs
-        if settings.display_debug_msgs:
+        if (settings.display_debug_msgs):
             # desc state short
             sICU.describe_state_short()
 
@@ -92,15 +89,13 @@ def stats():
     print("total bed occupation: " + str(sICU.stat_total_bed_occupation) + " hours")
 
     print("failed reschedules: " + str(sICU.stat_failed_RESCHEDULES))
-    print("successful reschedules: " + str(sICU.stat_succesful_RESCHEDULES))
+    print("succesful reschedules: " + str(sICU.stat_succesful_RESCHEDULES))
 
     print("patients (planned): " + str(sICU.stat_planned))
     print("patients (unplanned): " + str(stat_unplanned))
 
 
-if __name__ == "__main__":
-    run()
-    stats()
+run()
+stats()
 
-    # Prevent animated window to close immediately upon finishing executing the simulation.
-    input("Press enter to exit.")
+input("Press enter to exit.")

@@ -1,42 +1,84 @@
-"""This module contains classes and functions to create animated matplotlib plots."""
+from typing import List
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
+import numpy as np
+from matplotlib import colors
+
+from icu import IcuBed
+from patient import ScheduledPatient
 
 
 class Animator:
-    """Contains methods to help repeatedly draw a linegraph."""
-    x_axis: list[int]
-    y_axis: list[int]
-    ax: Axes
-    x_axis_limit: int
 
-    def __init__(self, ax: Axes, x_axis_limit: int):
-        """
-        Initializes the animator by setting the x-limit of the graph and creating empty lists for the x- and y-axes.
+    #colors
+    cmap = colors.ListedColormap(['white', 'blue', 'red', 'green', 'orange', 'purple', 'magenta', 'cyan', 'olive'])
 
-        :param ax: A matplotlib.axes.Axes instance.
-        :param x_axis_limit: The largest point displayed on the x-axis of the graph
-        """
-        self.x_axis = []
-        self.y_axis = []
-        self.ax = ax
-        self.x_axis_limit = x_axis_limit
+    def __init__(self, x_lim: int):
+        
+        #config
+        plt.ion()
+        self.fig, self.ax = plt.subplots(nrows=2, ncols=2, figsize=(10, 8))
 
-    def plot(self, x: int, y: int):
-        """
-        Clears and redraws the graph with a new point.
+        #set x and y for occupied
+        self.occup_x = []
+        self.occup_y = []
 
-        :param x: The x coord of the new point.
-        :param y: The y coord of the new point.
-        """
-        self.x_axis.append(x)
-        self.y_axis.append(y)
+        # set limit
+        self.x_lim = x_lim
+
+    def plot_occupied(self, step, value):
+
+        # plot bed bezetting
+        self.occup_x.append(step)
+        self.occup_y.append(value)
 
         # Clear previous points from graph
-        self.ax.clear()
-        self.ax.plot(self.x_axis, self.y_axis)
-        self.ax.set_xlim(0, self.x_axis_limit)
+        self.ax[0,0].clear()
+        self.ax[0,0].plot(self.occup_x, self.occup_y)
+        self.ax[0,0].set_xlim([0, self.x_lim])
 
-        # Pauses the graph for a small amount of time to give it time to draw. If this is removed the simulation will
-        # finish before any point can be drawn causing the window to crash.
-        plt.pause(0.01)
+        #pause
+        plt.pause(0.05)
+
+    def plot_beds(self, step, values: List[IcuBed]):
+
+        #create array
+        self.bed_occup_array = np.zeros((10, 10))
+
+        #convert to 2d array
+        for index, bed in enumerate(values):
+            y_var = index % 10
+            x_var = int(np.floor((index) / 10))
+
+            # convert specialism into int
+            specs = ['CAPU', 'CHIR', 'NEC', 'INT', 'NEU', 'CARD', 'OTHER']
+            g_spec_i = 0
+            if (bed.is_occupied()):
+                g_spec = bed.get_patient().get_specialism()
+                g_spec_i = specs.index(g_spec) + 1
+
+            self.bed_occup_array[x_var][y_var] = g_spec_i
+
+        self.ax[1,0].clear()
+
+        # draw gridlines
+        self.ax[1,0].grid(which='major', axis='both', linestyle='-', color='k', linewidth=2)
+        self.ax[1,0].set_xticks(np.arange(-.5, 10, 1));
+        self.ax[1,0].set_yticks(np.arange(-.5, 10, 1));
+
+        #plot
+        self.ax[1,0].imshow(self.bed_occup_array, cmap = self.cmap)
+
+    def plot_rescheduled(self, values: List[ScheduledPatient]):
+        
+        #filter
+        rescheduled = [x for x in values if x.has_been_rescheduled]
+        rescheduled.sort(key=lambda x: -x.patient_waiting_time)
+
+        #transform
+        x_arr = [index for index, x in enumerate(rescheduled)]
+        y_arr = [x.patient_waiting_time for x in rescheduled]
+
+        #display
+        self.ax[0,1].clear()
+        self.ax[0,1].bar(x_arr, y_arr)

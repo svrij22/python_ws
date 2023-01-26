@@ -8,35 +8,55 @@ import patient
 
 class DataTests(unittest.TestCase):
 
+
+    weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+
+    def do_test_interval(self, isPlanned, weekday):
+        
+        # Calc intervals
+        intervals = []
+        for x in range(100000):
+            intervals.append(patient.new_patient_interval(isPlanned, weekday))
+
+        # Get mean and round
+        g_mean = numpy.mean(intervals)
+        g_mean_rounded = numpy.round(g_mean, 1)
+
+        #assert
+        if (isPlanned):
+            self.assertAlmostEqual(g_mean_rounded, patient.EXPO_VARIABLE_PLANNED[weekday], 0)
+        else:
+            self.assertAlmostEqual(g_mean_rounded, patient.EXPO_VARIABLE_UNPLANNED_W_DENIED, 0)
+
+    def test_interval_planned_monday(self):
+        self.do_test_interval(True, self.weekdays[0])
+        
+    def test_interval_planned_tuesday(self):
+        self.do_test_interval(True, self.weekdays[1])
+        
+    def test_interval_planned_wednesday(self):
+        self.do_test_interval(True, self.weekdays[2])
+        
+    def test_interval_planned_thursday(self):
+        self.do_test_interval(True, self.weekdays[3])
+        
+    def test_interval_planned_friday(self):
+        self.do_test_interval(True, self.weekdays[4])
+        
+    def test_interval_planned_saturday(self):
+        self.do_test_interval(True, self.weekdays[5])
+        
+    def test_interval_planned_sunday(self):
+        self.do_test_interval(True, self.weekdays[6])
+
     def test_interval_unplanned(self):
-        # print('Running interval test - unplanned')
+        self.do_test_interval(False, '')
 
-        # Calc intervals
-        intervals = []
-        for x in range(100000):
-            intervals.append(patient.new_patient_interval(False))
 
-        # Get mean and round
-        g_mean = numpy.mean(intervals)
-        g_mean_rounded = numpy.round(g_mean, 1)
-
-        # assert almost equal
-        self.assertAlmostEqual(g_mean_rounded, 5.9849999051952985, 1)
-
-    def test_interval_planned(self):
-        # print('Running interval test - planned')
-
-        # Calc intervals
-        intervals = []
-        for x in range(100000):
-            intervals.append(patient.new_patient_interval(True))
-
-        # Get mean and round
-        g_mean = numpy.mean(intervals)
-        g_mean_rounded = numpy.round(g_mean, 1)
-
-        # assert almost equal
-        self.assertAlmostEqual(g_mean_rounded, 11.659628456007704, 0)
+    def test_interval_planned_amount(self):
+        for x in range(10):
+            n_schedule = patient.new_patient_schedule_stack()
+            print(len(n_schedule))
 
     def test_proc_length(self):
         # print('Running  prodecure length test')

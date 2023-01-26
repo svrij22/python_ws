@@ -8,7 +8,7 @@ class DataTests(unittest.TestCase):
 
     def getScheduledPatient(self) -> ScheduledPatient:
         # create patient
-        nPatient = patient.new_patient(True)
+        nPatient = patient.new_patient(True, 'Monday')
 
         # create schedule
         return ScheduledPatient(nPatient, 60)

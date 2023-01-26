@@ -10,7 +10,7 @@ class DataTests(unittest.TestCase):
     def getScheduledPatient(self) -> ScheduledPatient:
 
         # create patient
-        nPatient = patient.new_patient(True)
+        nPatient = patient.new_patient(True, 'Monday')
 
         # create schedule
         return ScheduledPatient(nPatient, 60)
@@ -19,6 +19,7 @@ class DataTests(unittest.TestCase):
 
         # create dept
         dept = IcuDepartment()
+        dept.schedules_stack = []
         dept.settings.step_size_hour = 60
 
         # create
@@ -41,7 +42,7 @@ class DataTests(unittest.TestCase):
 
         # fill dept
         for x in range(dept.settings.amount_of_icu_beds):
-            dept.add_patient(patient.new_patient(True))
+            dept.add_patient(patient.new_patient(True, 'Monday'))
 
         # is full
         self.assertTrue(not dept.has_space())
@@ -54,7 +55,7 @@ class DataTests(unittest.TestCase):
 
         # fill dept
         for x in range(dept.settings.amount_of_icu_beds):
-            dept.add_patient(patient.new_patient(True))
+            dept.add_patient(patient.new_patient(True, 'Monday'))
 
         # get filled beds
         filled_beds = [x for x in dept.ICUBeds if x.is_occupied()]
@@ -70,7 +71,7 @@ class DataTests(unittest.TestCase):
 
         # fill dept
         for x in range(dept.settings.amount_of_icu_beds):
-            dept.add_patient(patient.new_patient(True))
+            dept.add_patient(patient.new_patient(True, 'Monday'))
 
         # pass hours
         dept.hours_has_passed()
@@ -89,7 +90,7 @@ class DataTests(unittest.TestCase):
     def getReScheduledPatient(self) -> ScheduledPatient:
 
         # create patient
-        nPatient = patient.new_patient(True)
+        nPatient = patient.new_patient(True, 'Monday')
 
         # create schedule
         reSched = ScheduledPatient(nPatient, 1000)
@@ -107,7 +108,7 @@ class DataTests(unittest.TestCase):
 
         # fill dept
         for x in range(dept.settings.amount_of_icu_beds):
-            dept.add_patient(patient.new_patient(True))
+            dept.add_patient(patient.new_patient(True, 'Monday'))
 
         # fill schedule
         dept.schedules_stack = [self.getReScheduledPatient() for x in range(5)]
@@ -126,7 +127,7 @@ class DataTests(unittest.TestCase):
 
         # fill dept
         for x in range(dept.settings.amount_of_icu_beds):
-            dept.add_patient(patient.new_patient(True))
+            dept.add_patient(patient.new_patient(True, 'Monday'))
 
         # fill schedule
         dept.schedules_stack = [self.getReScheduledPatient() for x in range(5)]
@@ -145,7 +146,7 @@ class DataTests(unittest.TestCase):
 
         # fill dept
         for x in range(dept.settings.amount_of_icu_beds):
-            dept.add_patient(patient.new_patient(True))
+            dept.add_patient(patient.new_patient(True, 'Monday'))
 
         # fill schedule
         dept.schedules_stack = [self.getReScheduledPatient() for x in range(5)]
@@ -166,7 +167,7 @@ class DataTests(unittest.TestCase):
 
         # fill dept
         for x in range(dept.settings.amount_of_icu_beds):
-            dept.add_patient(patient.new_patient(True))
+            dept.add_patient(patient.new_patient(True, 'Monday'))
 
         # fill schedule
         dept.schedules_stack = [self.getReScheduledPatient() for x in range(5)]
@@ -188,7 +189,7 @@ class DataTests(unittest.TestCase):
 
         # fill dept
         for x in range(dept.settings.amount_of_icu_beds):
-            dept.try_adm_patient(patient.new_patient(True))
+            dept.try_adm_patient(patient.new_patient(True, 'Monday'))
 
         # assert equals
         self.assertEqual(dept.stat_patients_ADMISSIONED, dept.settings.amount_of_icu_beds)
@@ -201,14 +202,14 @@ class DataTests(unittest.TestCase):
 
         # fill dept
         for x in range(dept.settings.amount_of_icu_beds):
-            dept.try_adm_patient(patient.new_patient(True))
+            dept.try_adm_patient(patient.new_patient(True, 'Monday'))
 
         # assert equals
         self.assertEqual(dept.stat_patients_ADMISSIONED, dept.settings.amount_of_icu_beds)
 
         # assert exception
         with self.assertRaises(Exception):
-            dept.add_patient(patient.new_patient(True))
+            dept.add_patient(patient.new_patient(True, 'Monday'))
 
     def test_STAT_patients_DENIED(self):
 
@@ -217,11 +218,11 @@ class DataTests(unittest.TestCase):
 
         # fill dept
         for x in range(dept.settings.amount_of_icu_beds):
-            dept.try_adm_patient(patient.new_patient(True))
+            dept.try_adm_patient(patient.new_patient(True, 'Monday'))
 
         # add 50 non planned patients
         for x in range(50):
-            dept.try_adm_patient(patient.new_patient(False))
+            dept.try_adm_patient(patient.new_patient(False, 'Monday'))
 
         # assert equals
         self.assertEqual(dept.stat_patients_DENIED, 50)
@@ -234,7 +235,7 @@ class DataTests(unittest.TestCase):
 
         # fill dept
         for x in range(dept.settings.amount_of_icu_beds):
-            dept.try_adm_patient(patient.new_patient(True))
+            dept.try_adm_patient(patient.new_patient(True, 'Monday'))
 
         # pass hours
         hours_passed = 0
