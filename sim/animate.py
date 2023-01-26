@@ -1,11 +1,11 @@
-from typing import List
+from typing import List, Union
 
 import matplotlib.style as mplstyle
 import numpy as np
 from matplotlib import colors
 from matplotlib import pyplot as plt
 # This import registers the 3D projection, but is otherwise unused.
-from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
+from mpl_toolkits.mplot3d import Axes3D
 
 from icu import IcuBed
 from patient import ScheduledPatient
@@ -13,106 +13,171 @@ from patient import ScheduledPatient
 mplstyle.use('fast')
 
 
-class Animator:
-    # colors
-    cmap = colors.ListedColormap(['white', 'blue', 'red', 'green', 'orange', 'purple', 'magenta', 'cyan', 'olive'])
-    bed_occup_array: np.ndarray
+class BaseAnimator:
+    ax: Union[plt.Axes, Axes3D]
+    fig: plt.Figure
+    pos_in_row: int
+    pos_in_col: int
 
-    def __init__(self, x_lim: int):
+    def __init__(self, pos_in_row: int, pos_in_col: int):
+        self.pos_in_row = pos_in_row
+        self.pos_in_col = pos_in_col
 
-        # config
+    @classmethod
+    def setup(cls, n_cols: int, n_rows: int, figsize: tuple[int, int]) -> None:
         plt.ion()
-        self.fig, self.ax = plt.subplots(nrows=2, ncols=2, figsize=(10, 8))
-        self.ax[0, 1] = self.fig.add_subplot(2, 2, 2, projection='3d')
+        cls.fig, cls.ax = plt.subplots(nrows=n_rows, ncols=n_cols, figsize=figsize)
 
-        # set x and y for occupied
-        self.occup_x = []
-        self.occup_y = []
 
-        # set limit
+class LineAnimator(BaseAnimator):
+    """
+    Animates a linechart by plotting a line between two arrays of x- and y-axes.
+    """
+    x: list[float, int]
+    y: list[float, int]
+    x_lim: int
+
+    def __init__(self, pos_in_row: int, pos_in_col: int, x_lim: int):
+        """
+        Sets the x-limit and initializes the x- and y-axes of a line graph.
+
+        :param x_lim: The maximum plottable value on the x-axis.
+        """
+        super().__init__(pos_in_row, pos_in_col)
+
+        self.x = []
+        self.y = []
+
         self.x_lim = x_lim
 
-    def plot_occupied(self, step, value):
+    def plot(self, x_coord: Union[int, float], y_coord: Union[int, float]):
+        """
+        Plots a new point based on an x and y coordinate.
+        """
+        ax: plt.Axes = self.ax[self.pos_in_row, self.pos_in_col]
 
-        # plot bed bezetting
-        self.occup_x.append(step)
-        self.occup_y.append(value)
+        self.x.append(x_coord)
+        self.y.append(y_coord)
 
-        # Clear previous points from graph
-        self.ax[0, 0].clear()
-        self.ax[0, 0].plot(self.occup_x, self.occup_y)
-        self.ax[0, 0].set_xlim([0, self.x_lim])
+        ax.clear()
+        ax.plot(self.x, self.y)
+        ax.set_xlim(left=0, right=self.x_lim)
 
-        # pause
-        plt.pause(0.03)
+        # When data that should be plotted is supplied before the previous step has been plotted the UI will crash.
+        # plt.pause() will make sure there is enough time to plot.
+        plt.pause(0.0001)
 
-    def plot_beds(self, values: List[IcuBed]):
 
-        # create array
-        self.bed_occup_array = np.zeros((10, 10))
+class MatrixAnimator(BaseAnimator):
+    """
+    An animated matrix chart where the color in each cell is mapped to a certain specialism.
+    """
+    grid_size: tuple[int, int]
 
-        # convert to 2d array
-        for index, bed in enumerate(values):
-            y_var = index % 10
-            x_var = int(np.floor(index / 10))
+    SPECIALISM_MAP: dict[str, int] = {'CAPU': 0, 'CHIR': 1, 'NEC': 2, 'INT': 3, 'NEU': 4, 'CARD': 5, 'OTHER': 6}
+    COLOR_MAP = colors.ListedColormap(['white', 'blue', 'red', 'green', 'orange', 'purple', 'magenta', 'cyan', 'olive'])
 
-            # convert specialism into int
-            specs = ['CAPU', 'CHIR', 'NEC', 'INT', 'NEU', 'CARD', 'OTHER']
-            g_spec_i = 0
-            if bed.is_occupied():
-                g_spec = bed.get_patient().get_specialism()
-                g_spec_i = specs.index(g_spec) + 1
+    def __init__(self, pos_in_row: int, pos_in_col: int, grid_size: tuple[int, int]):
+        super().__init__(pos_in_row, pos_in_col)
 
-            self.bed_occup_array[x_var][y_var] = g_spec_i
+        self.grid_size = grid_size
 
-        self.ax[1, 0].clear()
+    def plot(self, icu_beds: list[IcuBed]):
+        ax: plt.Axes = self.ax[self.pos_in_row, self.pos_in_col]
+        bed_occupancy: np.ndarray = np.zeros(self.grid_size)
+        x: int
+        y: int
 
-        # draw gridlines
-        self.ax[1, 0].grid(which='major', axis='both', linestyle='-', color='k', linewidth=2)
-        self.ax[1, 0].set_xticks(np.arange(-.5, 10, 1))
-        self.ax[1, 0].set_yticks(np.arange(-.5, 10, 1))
+        for index, bed in enumerate(icu_beds):
+            y = index % self.grid_size[0]
+            x = index // self.grid_size[1]
 
-        # plot
-        self.ax[1, 0].imshow(self.bed_occup_array, cmap=self.cmap)
+            bed_occupancy[x][y] = self.get_grid_color(bed)
 
-    def plot_rescheduled(self, values: List[ScheduledPatient]):
+        ax.clear()
+        ax.grid(which='major', axis='both', linestyle='-', color='k', linewidth=2)
+        ax.set_xticks(np.arange(-.5, self.grid_size[0], 1))
+        ax.set_yticks(np.arange(-.5, self.grid_size[1], 1))
 
-        # filter
+        ax.imshow(bed_occupancy, cmap=self.COLOR_MAP)
+
+    def get_grid_color(self, bed: IcuBed):
+        if bed.is_occupied():
+            specialism = bed.get_patient().get_specialism()
+
+            return self.SPECIALISM_MAP[specialism] + 1
+
+        return 0
+
+
+class VoxelAnimator(BaseAnimator):
+    """
+    A 3d graph which displays each bed on the x- and y-axes and the time it has been occupied by a single patient on the
+    z-axis.
+    """
+    grid_x_y: int
+    grid_z: int
+    max_hours_in_icu: int
+
+    def __init__(self, pos_in_row: int, pos_in_col: int, grid_x_y: int, grid_z: int, max_hours_in_icu: int):
+        super().__init__(pos_in_row, pos_in_col)
+
+        self.grid_x_y = grid_x_y
+        self.grid_z = grid_z
+        self.max_hours_in_icu = max_hours_in_icu
+
+        self.ax[pos_in_row, pos_in_col] = self.fig.add_subplot(2, 2, 2, projection='3d')
+
+    def plot(self, icu_beds: List[IcuBed]):
+        ax: Axes3D = self.ax[self.pos_in_row, self.pos_in_col]
+
+        bed_occup_array_3d = np.zeros((self.grid_x_y, self.grid_x_y, self.grid_z))
+
+        # convert to 3d array
+        for index, bed in enumerate(icu_beds):
+            y = index % self.grid_x_y
+            x = index // self.grid_x_y
+
+            # set 3d range
+            for z in range(20):
+                bed_occup_array_3d[x][y][z] = self.display_voxel(bed, z)
+
+        ax.clear()
+        ax.voxels(bed_occup_array_3d, edgecolor='k')
+
+    def display_voxel(self, bed: IcuBed, voxel_level: int) -> bool:
+        """
+        Checks whether a bed is occupied and whether the limit on the z-axis has been reached.
+
+        :param bed: The bed to check.
+        :param voxel_level: The current height of the bar drawn for this bed.
+        :return: True if the bed is occupied and the bar has not reached the maximum height of the graph, False if
+            either of these conditions have not been met
+        """
+        if not bed.is_occupied():
+            return False
+
+        hours_patient_in_icu: int = bed.get_patient().hours_on_icu()
+        hour_i: int = hours_patient_in_icu // self.max_hours_in_icu + 1
+        display_voxel: bool = voxel_level < hour_i
+
+        return display_voxel
+
+
+class BarAnimator(BaseAnimator):
+    """
+    A barchart which displays the amount people have been rescheduled on the x-axis and the amount of people that have
+    been rescheduled on the y-axis.
+    """
+
+    def plot(self, values: List[ScheduledPatient]):
+        ax: plt.Axes = self.ax[self.pos_in_row, self.pos_in_col]
+
         rescheduled = [x for x in values if x.has_been_rescheduled]
         rescheduled.sort(key=lambda x: -x.patient_waiting_time)
 
-        # transform
-        x_arr = [index for index, x in enumerate(rescheduled)]
-        y_arr = [x.patient_waiting_time for x in rescheduled]
+        x_axis = range(len(rescheduled))
+        y_axis = [x.patient_waiting_time for x in rescheduled]
 
-        # display
-        self.ax[1, 1].clear()
-        self.ax[1, 1].bar(x_arr, y_arr)
-
-    def plot_voxels(self, values: List[IcuBed]):
-        size = 6
-
-        # create array
-        bed_occup_array_3d = np.zeros((size, size, 20))
-
-        # convert to 3d array
-        for index, bed in enumerate(values):
-
-            # get x and y
-            y_var = index % size
-            x_var = int(np.floor(index / size))
-
-            # set 3d range
-            for i in range(20):
-                is_occup = bed.is_occupied()
-                disp_l = False
-                if is_occup:
-                    max_hours = 120
-                    curr_hours = bed.get_patient().hours_on_icu()
-                    hour_i = np.floor(curr_hours / max_hours) + 1
-                    disp_l = i < hour_i
-                bed_occup_array_3d[x_var][y_var][i] = is_occup & disp_l
-
-        # and plot everything
-        self.ax[0, 1].clear()
-        self.ax[0, 1].voxels(bed_occup_array_3d, edgecolor='k')
+        ax.clear()
+        ax.bar(x_axis, y_axis)
