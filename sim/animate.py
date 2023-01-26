@@ -16,6 +16,7 @@ mplstyle.use('fast')
 class Animator:
     # colors
     cmap = colors.ListedColormap(['white', 'blue', 'red', 'green', 'orange', 'purple', 'magenta', 'cyan', 'olive'])
+    bed_occup_array: np.ndarray
 
     def __init__(self, x_lim: int):
 
@@ -45,7 +46,7 @@ class Animator:
         # pause
         plt.pause(0.03)
 
-    def plot_beds(self, step, values: List[IcuBed]):
+    def plot_beds(self, values: List[IcuBed]):
 
         # create array
         self.bed_occup_array = np.zeros((10, 10))
@@ -53,12 +54,12 @@ class Animator:
         # convert to 2d array
         for index, bed in enumerate(values):
             y_var = index % 10
-            x_var = int(np.floor((index) / 10))
+            x_var = int(np.floor(index / 10))
 
             # convert specialism into int
             specs = ['CAPU', 'CHIR', 'NEC', 'INT', 'NEU', 'CARD', 'OTHER']
             g_spec_i = 0
-            if (bed.is_occupied()):
+            if bed.is_occupied():
                 g_spec = bed.get_patient().get_specialism()
                 g_spec_i = specs.index(g_spec) + 1
 
@@ -68,8 +69,8 @@ class Animator:
 
         # draw gridlines
         self.ax[1, 0].grid(which='major', axis='both', linestyle='-', color='k', linewidth=2)
-        self.ax[1, 0].set_xticks(np.arange(-.5, 10, 1));
-        self.ax[1, 0].set_yticks(np.arange(-.5, 10, 1));
+        self.ax[1, 0].set_xticks(np.arange(-.5, 10, 1))
+        self.ax[1, 0].set_yticks(np.arange(-.5, 10, 1))
 
         # plot
         self.ax[1, 0].imshow(self.bed_occup_array, cmap=self.cmap)
@@ -89,11 +90,7 @@ class Animator:
         self.ax[1, 1].bar(x_arr, y_arr)
 
     def plot_voxels(self, values: List[IcuBed]):
-
         size = 6
-
-        # prepare some coordinates
-        x, y, z = np.indices((size, size, 20))
 
         # create array
         bed_occup_array_3d = np.zeros((size, size, 20))
@@ -103,13 +100,13 @@ class Animator:
 
             # get x and y
             y_var = index % size
-            x_var = int(np.floor((index) / size))
+            x_var = int(np.floor(index / size))
 
             # set 3d range
             for i in range(20):
                 is_occup = bed.is_occupied()
                 disp_l = False
-                if (is_occup):
+                if is_occup:
                     max_hours = 120
                     curr_hours = bed.get_patient().hours_on_icu()
                     hour_i = np.floor(curr_hours / max_hours) + 1
