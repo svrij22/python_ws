@@ -27,7 +27,7 @@ class IcuBed:
         :raises: Exception if the bed is empty
         :return: dict
         """
-        if not (self.occupied):
+        if not self.occupied:
             raise Exception("Bed is empty")
         return self.patient
 
@@ -44,7 +44,7 @@ class IcuBed:
         :raises: Exception if the bed is already occupied
         :param patient: dict
         """
-        if (self.occupied):
+        if self.occupied:
             raise Exception("Bed is occupied")
 
         self.patient = patient
@@ -119,7 +119,7 @@ class IcuDepartment:
         """
         # for each bed -> is occup -> get patient -> subtract
         for bed in self.ICUBeds:
-            if (bed.is_occupied()):
+            if bed.is_occupied():
 
                 # get patient and subtract
                 patient = bed.get_patient()
@@ -129,7 +129,7 @@ class IcuDepartment:
                 self.stat_total_bed_occupation += self.settings.step_size_hour
 
                 # disc if needed
-                if (patient.should_be_discharged()):
+                if patient.should_be_discharged():
                     bed.clear()
 
     # print the icu dept. state
@@ -138,7 +138,7 @@ class IcuDepartment:
         # for each bed print
         for index, bed in enumerate(self.ICUBeds):
             print('bed ' + str(index + 1))
-            if (bed.is_occupied()):
+            if bed.is_occupied():
                 bed.get_patient().print_self()
             else:
                 print('empty')
@@ -166,12 +166,12 @@ class IcuDepartment:
         for bed in self.ICUBeds:
             if not (bed.is_occupied()):
                 bed.set_patient(patient)
-                return;
+                return
 
     def try_adm_patient(self, patient: Patient):
 
         # Has space?
-        if (self.has_space()):
+        if self.has_space():
 
             # add patient
             self.add_patient(patient)
@@ -180,14 +180,14 @@ class IcuDepartment:
         else:
 
             # denied
-            if (not patient.isPlanned):
+            if not patient.isPlanned:
                 self.stat_patients_DENIED += 1
             return False
 
     # reschedule patient
     def reschedule_patient(self, patient):
         self.schedules_stack.append(ScheduledPatient(patient, self.settings.hours_between_reschedule))
-        self.stat_patients_RESCHEDULED += 1;
+        self.stat_patients_RESCHEDULED += 1
 
     #
     # SCHEDULING
@@ -200,7 +200,7 @@ class IcuDepartment:
         for sched in self.schedules_stack:
 
             # add to total waiting time
-            if (sched.has_been_rescheduled):
+            if sched.has_been_rescheduled:
                 self.stat_total_waiting_time += self.settings.step_size_hour
                 sched.patient_waiting_time += self.settings.step_size_hour
 
@@ -208,10 +208,10 @@ class IcuDepartment:
             sched.hours_has_passed(self.settings.step_size_hour)
 
             # if schedule hours to go is lower than 0
-            if (sched.hoursToGo <= 0):
+            if sched.hoursToGo <= 0:
 
                 # check if should be rescheduled
-                if (sched.should_be_executed()):
+                if sched.should_be_executed():
                     # add attempts and try
                     self.try_execute_schedule(sched)
 
@@ -223,17 +223,17 @@ class IcuDepartment:
 
         # try add patient
         is_succesful = self.try_adm_patient(scheduled_p.patient)
-        if (is_succesful):
+        if is_succesful:
 
             # remove and add var
-            scheduled_p.remove_me = True;
+            scheduled_p.remove_me = True
 
             # if is rescheduled
-            if (scheduled_p.has_been_rescheduled):
-                self.stat_succesful_RESCHEDULES += 1;
+            if scheduled_p.has_been_rescheduled:
+                self.stat_succesful_RESCHEDULES += 1
 
             # ===============DEBUG==================
-            if (self.settings.display_debug_msgs):
+            if self.settings.display_debug_msgs:
                 print('Scheduled patient admissioned')
 
         else:
@@ -242,7 +242,7 @@ class IcuDepartment:
             scheduled_p.reschedule(self.settings.hours_between_reschedule)
 
             # BUT if max attempts reached, remove it
-            if (scheduled_p.attempts == self.settings.max_allowed_reschedule_attempts):
+            if scheduled_p.attempts == self.settings.max_allowed_reschedule_attempts:
 
                 # remove and add var
                 scheduled_p.remove_me = True
@@ -250,7 +250,7 @@ class IcuDepartment:
                 self.stat_patients_DENIED += 1;
 
                 # ===============DEBUG==================
-                if (self.settings.display_debug_msgs):
+                if self.settings.display_debug_msgs:
                     print('Scheduled patient reached max admission attempts')
 
             else:
