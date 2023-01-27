@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Tuple, Dict
 
 import matplotlib.style as mplstyle
 import numpy as np
@@ -24,7 +24,7 @@ class BaseAnimator:
         self.pos_in_col = pos_in_col
 
     @classmethod
-    def setup(cls, n_cols: int, n_rows: int, figsize: tuple[int, int]) -> None:
+    def setup(cls, n_cols: int, n_rows: int, figsize: Tuple[int, int]) -> None:
         plt.ion()
         cls.fig, cls.ax = plt.subplots(nrows=n_rows, ncols=n_cols, figsize=figsize)
 
@@ -33,8 +33,8 @@ class LineAnimator(BaseAnimator):
     """
     Animates a linechart by plotting a line between two arrays of x- and y-axes.
     """
-    x: list[float, int]
-    y: list[float, int]
+    x: List[Union[float, int]]
+    y: List[Union[float, int]]
     x_lim: int
 
     def __init__(self, pos_in_row: int, pos_in_col: int, x_lim: int):
@@ -72,17 +72,17 @@ class MatrixAnimator(BaseAnimator):
     """
     An animated matrix chart where the color in each cell is mapped to a certain specialism.
     """
-    grid_size: tuple[int, int]
+    grid_size: Tuple[int, int]
 
-    SPECIALISM_MAP: dict[str, int] = {'CAPU': 0, 'CHIR': 1, 'NEC': 2, 'INT': 3, 'NEU': 4, 'CARD': 5, 'OTHER': 6}
+    SPECIALISM_MAP: Dict[str, int] = {'CAPU': 0, 'CHIR': 1, 'NEC': 2, 'INT': 3, 'NEU': 4, 'CARD': 5, 'OTHER': 6}
     COLOR_MAP = colors.ListedColormap(['white', 'blue', 'red', 'green', 'orange', 'purple', 'magenta', 'cyan', 'olive'])
 
-    def __init__(self, pos_in_row: int, pos_in_col: int, grid_size: tuple[int, int]):
+    def __init__(self, pos_in_row: int, pos_in_col: int, grid_size: Tuple[int, int]):
         super().__init__(pos_in_row, pos_in_col)
 
         self.grid_size = grid_size
 
-    def plot(self, icu_beds: list[IcuBed]):
+    def plot(self, icu_beds: List[IcuBed]):
         ax: plt.Axes = self.ax[self.pos_in_row, self.pos_in_col]
         bed_occupancy: np.ndarray = np.zeros(self.grid_size)
         x: int
