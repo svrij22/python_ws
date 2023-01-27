@@ -13,17 +13,17 @@ EXPO_VARIABLE_UNPLANNED = 6.402049279835394  # mean of delta time data
 EXPO_VARIABLE_UNPLANNED_W_DENIED = 5.9849999051952985  # mean of delta time data with unplanned and denied patients
 
 # INTERVAL planned by weekday
-EXPO_VARIABLE_PLANNED = {'Monday': 16.94640769230795,
-                         'Tuesday': 9.122215470678965,
-                         'Wednesday': 9.820380658435843,
-                         'Thursday': 6.472981164925745,
-                         'Friday': 7.705045970266005,
-                         'Saturday': 18.65161290322571,
-                         'Sunday': 29.28867424242344}  # means of delta time data by weekday
+EXPO_VARIABLE_PLANNED = {'Monday': 11.073948717948895,
+                         'Tuesday': 8.50780864197519,
+                         'Wednesday': 10.571459619341583,
+                         'Thursday': 7.275875276986463,
+                         'Friday': 8.522006064162833,
+                         'Saturday': 19.192473118279352,
+                         'Sunday': 25.044709595959088}  # means of delta time data by weekday
 
 
 def new_patient_interval(isPlanned, weekday):
-    if isPlanned:
+    if (isPlanned):
         return np.random.exponential(EXPO_VARIABLE_PLANNED[weekday])
     else:
         return np.random.exponential(EXPO_VARIABLE_UNPLANNED_W_DENIED)
@@ -35,7 +35,7 @@ CALC_MU = 3.50502901187668
 CALC_SIGMA = 1.3165461050924663
 
 
-def new_procedure_length():
+def new_prodecure_length():
     return np.random.lognormal(CALC_MU, CALC_SIGMA)
 
 
@@ -52,7 +52,7 @@ EXPO_VARIABLE_PLANNED_ILLNESS = {
 
 # Generate specialism
 def new_specialism(isPlanned, weekday):
-    if isPlanned:
+    if (isPlanned):
         distribution = EXPO_VARIABLE_PLANNED_ILLNESS[weekday]
         return random.choices(list(distribution.keys()), weights=tuple(distribution.values()))[0]
     else:
@@ -61,7 +61,7 @@ def new_specialism(isPlanned, weekday):
 
 
 # RANDOM
-PATIENT_AMOUNT = 4199
+PATIENT_AMOUNT = 4399
 PATIENT_IS_PLANNED_AMOUNT = 1499
 
 
@@ -120,6 +120,11 @@ class Patient:
 
     def should_be_discharged(self):
         return self.hoursToGo < 0
+
+    def department(self):  #------------ write test ----------
+        for dep in SETTINGS.departments:
+            if self.specialism in dep:
+                return dep
 
     def print_self(self):
         print('patient is planned ' + str(self.isPlanned))
@@ -188,7 +193,7 @@ def new_patient_schedule_stack_new():
 # PATIENT FACTORY METHOD
 def new_patient(isPlanned, weekday) -> Patient:
     # Get stay length
-    hoursToGo = new_procedure_length()
+    hoursToGo = new_prodecure_length()
 
     # Get specialism
     specialism = new_specialism(isPlanned, weekday)

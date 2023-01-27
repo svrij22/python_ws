@@ -7,6 +7,8 @@ from patient import ScheduledPatient
 
 class DataTests(unittest.TestCase):
 
+    distribution = {'CARD/INT/OTHER': 7, 'NEU/NEC': 7, 'CAPU': 7, 'CHIR': 7}
+
     def getScheduledPatient(self) -> ScheduledPatient:
 
         # create patient
@@ -18,7 +20,7 @@ class DataTests(unittest.TestCase):
     def test_dept_schedule_should_be_executed(self):
 
         # create dept
-        dept = IcuDepartment()
+        dept = IcuDepartment(self.distribution)
         dept.schedules_stack = []
         dept.settings.step_size_hour = 60
 
@@ -37,25 +39,30 @@ class DataTests(unittest.TestCase):
     def test_dept_is_full(self):
 
         # create dept
-        dept = IcuDepartment()
+        dept = IcuDepartment(self.distribution)
         dept.settings.step_size_hour = 60
 
         # fill dept
-        for x in range(dept.settings.amount_of_icu_beds):
-            dept.add_patient(patient.new_patient(True, 'Monday'))
+        for key, value in self.distribution.items():
+            for i in range(value):
+                dept.try_adm_patient(patient.Patient(True, 10, key))
 
         # is full
-        self.assertTrue(not dept.has_space())
+        self.assertTrue(not dept.has_space(list(self.distribution.keys())[0]))
+        self.assertTrue(not dept.has_space(list(self.distribution.keys())[1]))
+        self.assertTrue(not dept.has_space(list(self.distribution.keys())[2]))
+        self.assertTrue(not dept.has_space(list(self.distribution.keys())[3]))
 
     def test_dept_is_full_all_beds_occupied(self):
 
         # create dept
-        dept = IcuDepartment()
+        dept = IcuDepartment(self.distribution)
         dept.settings.step_size_hour = 60
 
         # fill dept
-        for x in range(dept.settings.amount_of_icu_beds):
-            dept.add_patient(patient.new_patient(True, 'Monday'))
+        for key, value in self.distribution.items():
+            for i in range(value):
+                dept.try_adm_patient(patient.Patient(True, 10, key))
 
         # get filled beds
         filled_beds = [x for x in dept.ICUBeds if x.is_occupied()]
@@ -66,23 +73,27 @@ class DataTests(unittest.TestCase):
     def test_dept_pass_time(self):
 
         # create dept
-        dept = IcuDepartment()
+        dept = IcuDepartment(self.distribution)
         dept.settings.step_size_hour = 100
 
         # fill dept
-        for x in range(dept.settings.amount_of_icu_beds):
-            dept.add_patient(patient.new_patient(True, 'Monday'))
+        for key, value in self.distribution.items():
+            for i in range(value):
+                dept.try_adm_patient(patient.Patient(True, 10, key))
 
         # pass hours
         dept.hours_has_passed()
 
         # is full
-        self.assertTrue(dept.has_space())
+        self.assertTrue(dept.has_space(list(self.distribution.keys())[0]))
+        self.assertTrue(dept.has_space(list(self.distribution.keys())[1]))
+        self.assertTrue(dept.has_space(list(self.distribution.keys())[2]))
+        self.assertTrue(dept.has_space(list(self.distribution.keys())[3]))
 
     def test_dept_created_beds(self):
 
         # create dept
-        dept = IcuDepartment()
+        dept = IcuDepartment(self.distribution)
 
         # is amount_of_icu_beds
         self.assertTrue(len(dept.ICUBeds) == dept.settings.amount_of_icu_beds)
@@ -103,12 +114,13 @@ class DataTests(unittest.TestCase):
     def test_STAT_total_waiting_time(self):
 
         # create dept
-        dept = IcuDepartment()
+        dept = IcuDepartment(self.distribution)
         dept.settings.step_size_hour = 100
 
         # fill dept
-        for x in range(dept.settings.amount_of_icu_beds):
-            dept.add_patient(patient.new_patient(True, 'Monday'))
+        for key, value in self.distribution.items():
+            for i in range(value):
+                dept.try_adm_patient(patient.Patient(True, 10, key))
 
         # fill schedule
         dept.schedules_stack = [self.getReScheduledPatient() for x in range(5)]
@@ -122,12 +134,13 @@ class DataTests(unittest.TestCase):
     def test_STAT_patients_RESCHEDULED_zero(self):
 
         # create dept
-        dept = IcuDepartment()
+        dept = IcuDepartment(self.distribution)
         dept.settings.step_size_hour = 100
 
         # fill dept
-        for x in range(dept.settings.amount_of_icu_beds):
-            dept.add_patient(patient.new_patient(True, 'Monday'))
+        for key, value in self.distribution.items():
+            for i in range(value):
+                dept.try_adm_patient(patient.Patient(True, 10, key))
 
         # fill schedule
         dept.schedules_stack = [self.getReScheduledPatient() for x in range(5)]
@@ -141,12 +154,13 @@ class DataTests(unittest.TestCase):
     def test_STAT_patients_RESCHEDULED_all(self):
 
         # create dept
-        dept = IcuDepartment()
+        dept = IcuDepartment(self.distribution)
         dept.settings.step_size_hour = 1000
 
         # fill dept
-        for x in range(dept.settings.amount_of_icu_beds):
-            dept.add_patient(patient.new_patient(True, 'Monday'))
+        for key, value in self.distribution.items():
+            for i in range(value):
+                dept.try_adm_patient(patient.Patient(True, 10, key))
 
         # fill schedule
         dept.schedules_stack = [self.getReScheduledPatient() for x in range(5)]
@@ -162,12 +176,13 @@ class DataTests(unittest.TestCase):
     def test_STAT_patients_max_allowed_reschedule_attempts(self):
 
         # create dept
-        dept = IcuDepartment()
+        dept = IcuDepartment(self.distribution)
         dept.settings.step_size_hour = 1000
 
         # fill dept
-        for x in range(dept.settings.amount_of_icu_beds):
-            dept.add_patient(patient.new_patient(True, 'Monday'))
+        for key, value in self.distribution.items():
+            for i in range(value):
+                dept.try_adm_patient(patient.Patient(True, 10, key))
 
         # fill schedule
         dept.schedules_stack = [self.getReScheduledPatient() for x in range(5)]
@@ -184,12 +199,13 @@ class DataTests(unittest.TestCase):
     def test_STAT_patients_admissioned(self):
 
         # create dept
-        dept = IcuDepartment()
+        dept = IcuDepartment(self.distribution)
         dept.settings.step_size_hour = 1000
 
         # fill dept
-        for x in range(dept.settings.amount_of_icu_beds):
-            dept.try_adm_patient(patient.new_patient(True, 'Monday'))
+        for key, value in self.distribution.items():
+            for i in range(value):
+                dept.try_adm_patient(patient.Patient(True, 10, key))
 
         # assert equals
         self.assertEqual(dept.stat_patients_ADMISSIONED, dept.settings.amount_of_icu_beds)
@@ -197,12 +213,13 @@ class DataTests(unittest.TestCase):
     def test_STAT_patients_admissioned_EXCEPTION_add(self):
 
         # create dept
-        dept = IcuDepartment()
+        dept = IcuDepartment(self.distribution)
         dept.settings.step_size_hour = 1000
 
         # fill dept
-        for x in range(dept.settings.amount_of_icu_beds):
-            dept.try_adm_patient(patient.new_patient(True, 'Monday'))
+        for key, value in self.distribution.items():
+            for i in range(value):
+                dept.try_adm_patient(patient.Patient(True, 10, key))
 
         # assert equals
         self.assertEqual(dept.stat_patients_ADMISSIONED, dept.settings.amount_of_icu_beds)
@@ -214,11 +231,12 @@ class DataTests(unittest.TestCase):
     def test_STAT_patients_DENIED(self):
 
         # create dept
-        dept = IcuDepartment()
+        dept = IcuDepartment(self.distribution)
 
         # fill dept
-        for x in range(dept.settings.amount_of_icu_beds):
-            dept.try_adm_patient(patient.new_patient(True, 'Monday'))
+        for key, value in self.distribution.items():
+            for i in range(value):
+                dept.try_adm_patient(patient.Patient(True, 10, key))
 
         # add 50 non planned patients
         for x in range(50):
@@ -230,16 +248,17 @@ class DataTests(unittest.TestCase):
     def test_STAT_total_bed_occup(self):
 
         # create dept
-        dept = IcuDepartment()
+        dept = IcuDepartment(self.distribution)
         dept.settings.step_size_hour = 1
 
         # fill dept
-        for x in range(dept.settings.amount_of_icu_beds):
-            dept.try_adm_patient(patient.new_patient(True, 'Monday'))
+        for key, value in self.distribution.items():
+            for i in range(value):
+                dept.try_adm_patient(patient.Patient(True, 10, key))
 
         # pass hours
         hours_passed = 0
-        while (dept.occupied_num() > 0):
+        while dept.occupied_num() > 0:
             hours_passed += dept.occupied_num() * dept.settings.step_size_hour
             dept.hours_has_passed()
 

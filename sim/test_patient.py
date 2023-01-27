@@ -22,6 +22,36 @@ class DataTests(unittest.TestCase):
         nPatient.hours_has_passed(5600)
         self.assertEqual(nPatient.should_be_discharged(), True)
 
+    departments = ['CARD/INT/OTHER', 'NEU/NEC', 'CAPU', 'CHIR']
+
+    def test_specialism_gives_right_department_CARD(self):
+        nPatient = patient.Patient(True, 0, 'CARD')
+        self.assertEqual(nPatient.department(), self.departments[0])
+
+    def test_specialism_gives_right_department_INT(self):
+        nPatient = patient.Patient(True, 0, 'INT')
+        self.assertEqual(nPatient.department(), self.departments[0])
+
+    def test_specialism_gives_right_department_OTHER(self):
+        nPatient = patient.Patient(True, 0, 'OTHER')
+        self.assertEqual(nPatient.department(), self.departments[0])
+
+    def test_specialism_gives_right_department_NEU(self):
+        nPatient = patient.Patient(True, 0, 'NEU')
+        self.assertEqual(nPatient.department(), self.departments[1])
+
+    def test_specialism_gives_right_department_NEC(self):
+        nPatient = patient.Patient(True, 0, 'NEC')
+        self.assertEqual(nPatient.department(), self.departments[1])
+
+    def test_specialism_gives_right_department_CAPU(self):
+        nPatient = patient.Patient(True, 0, 'CAPU')
+        self.assertEqual(nPatient.department(), self.departments[2])
+
+    def test_specialism_gives_right_department_CHIR(self):
+        nPatient = patient.Patient(True, 0, 'CHIR')
+        self.assertEqual(nPatient.department(), self.departments[3])
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
