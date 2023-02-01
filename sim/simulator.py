@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 
 import patient
-#from animate import Animator
+from animate import LineAnimator, MatrixAnimator, VoxelAnimator, BaseAnimator, BarAnimator
 from icu import IcuDepartment
 from settings import Settings
 
@@ -86,19 +86,24 @@ def run():
 
     # if animator
     if settings.animator_enabled:
-        animator = Animator(vIS_STEPS)
+        BaseAnimator.setup(2, 2, (10, 8))
 
     # all steps
     for step_var in range(vIS_STEPS):
 
+        current_occupancy_animator: LineAnimator = LineAnimator(0, 0, vIS_STEPS)
+        occupancy_by_specialism_animator: MatrixAnimator = MatrixAnimator(1, 0, (10, 10))
+        occupancy_by_time_spent: VoxelAnimator = VoxelAnimator(0, 1, 6, 20, 120)
+        n_patients_rescheduled: BarAnimator = BarAnimator(1, 1)
         # run step
         step()
 
         if settings.animator_enabled and step_var % settings.plot_graph_interval == 0:
-            animator.plot_occupied(step_var, sICU.occupied_num())
-            animator.plot_beds(step_var, sICU.ICUBeds)
-            animator.plot_rescheduled(sICU.schedules_stack)
-            animator.plot_voxels(sICU.ICUBeds)
+            current_occupancy_animator.plot(step_var, sICU.occupied_num())
+            occupancy_by_specialism_animator.plot(sICU.ICUBeds)
+            occupancy_by_time_spent.plot(sICU.ICUBeds)
+            n_patients_rescheduled.plot(sICU.schedules_stack)
+            # animator.plot_rescheduled(sICU.schedules_stack)
 
         # ===============DEBUG==================
         # state msgs

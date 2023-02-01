@@ -40,7 +40,6 @@ class LineAnimator(BaseAnimator):
     def __init__(self, pos_in_row: int, pos_in_col: int, x_lim: int):
         """
         Sets the x-limit and initializes the x- and y-axes of a line graph.
-
         :param x_lim: The maximum plottable value on the x-axis.
         """
         super().__init__(pos_in_row, pos_in_col)
@@ -148,7 +147,6 @@ class VoxelAnimator(BaseAnimator):
     def display_voxel(self, bed: IcuBed, voxel_level: int) -> bool:
         """
         Checks whether a bed is occupied and whether the limit on the z-axis has been reached.
-
         :param bed: The bed to check.
         :param voxel_level: The current height of the bar drawn for this bed.
         :return: True if the bed is occupied and the bar has not reached the maximum height of the graph, False if
