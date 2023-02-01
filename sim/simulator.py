@@ -1,5 +1,3 @@
-import matplotlib.pyplot as plt
-
 import patient
 from animate import LineAnimator, MatrixAnimator, VoxelAnimator, BaseAnimator, BarAnimator
 from icu import IcuDepartment
@@ -10,7 +8,7 @@ settings = Settings()
 sICU = IcuDepartment({'CARD/INT/OTHER': 7, 'NEU/NEC': 8, 'CAPU': 8, 'CHIR': 4})
 
 if sICU.department_distribution['COVID'] < 0:
-    raise Exception(f"department distribution has to many beds: {sICU.department_distribution['COVID']*-1}")
+    raise Exception(f"department distribution has to many beds: {sICU.department_distribution['COVID'] * -1}")
 
 # Define the current hour of the simulation
 current_HOUR = 0
@@ -83,18 +81,18 @@ vIS_STEPS = int((settings.simulator_days * 24) / settings.step_size_hour)
 
 # run
 def run():
-
     # if animator
     if settings.animator_enabled:
         BaseAnimator.setup(2, 2, (10, 8))
-
-    # all steps
-    for step_var in range(vIS_STEPS):
 
         current_occupancy_animator: LineAnimator = LineAnimator(0, 0, vIS_STEPS)
         occupancy_by_specialism_animator: MatrixAnimator = MatrixAnimator(1, 0, (10, 10))
         occupancy_by_time_spent: VoxelAnimator = VoxelAnimator(0, 1, 6, 20, 120)
         n_patients_rescheduled: BarAnimator = BarAnimator(1, 1)
+
+    # all steps
+    for step_var in range(vIS_STEPS):
+
         # run step
         step()
 

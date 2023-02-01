@@ -372,3 +372,6 @@ poetry.toml
 # End of https://www.toptal.com/developers/gitignore/api/python,jetbrains,pycharm,jupyternotebooks
 
 output/
+
+.idea/
+*_tmp.py
