@@ -52,6 +52,10 @@ class DataTests(unittest.TestCase):
         nPatient = patient.Patient(True, 0, 'CHIR')
         self.assertEqual(nPatient.department(), self.departments[3])
 
+    def test_create_new_COVID_patient(self):
+        nPatient = patient.new_COVID_patient()
+        self.assertEqual(nPatient.department(), 'COVID')
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

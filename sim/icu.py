@@ -87,7 +87,7 @@ class IcuDepartment:
         self.stat_total_bed_occupation: int = 0
         self.stat_planned: int = len(self.schedules_stack)
 
-    def has_space(self, department) -> bool: # ---------------- rewrite tests -----------
+    def has_space(self, department) -> bool:
         """
         Check if the ICU department has any available beds
         :return: bool
@@ -110,7 +110,7 @@ class IcuDepartment:
         avail = [x for x in self.ICUBeds if not x.is_occupied()]
         return avail.count() / self.settings.amount_of_icu_beds
 
-    def occupied_num(self) -> int: # ------------ rewrite tests ------------
+    def occupied_num(self) -> int:
         """
         Get the number of available beds
         """

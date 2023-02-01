@@ -13,30 +13,46 @@ EXPO_VARIABLE_UNPLANNED = 6.402049279835394  # mean of delta time data
 EXPO_VARIABLE_UNPLANNED_W_DENIED = 5.9849999051952985  # mean of delta time data with unplanned and denied patients
 
 # INTERVAL planned by weekday
-EXPO_VARIABLE_PLANNED = {'Monday': 11.073948717948895,
-                         'Tuesday': 8.50780864197519,
-                         'Wednesday': 10.571459619341583,
-                         'Thursday': 7.275875276986463,
-                         'Friday': 8.522006064162833,
-                         'Saturday': 19.192473118279352,
-                         'Sunday': 25.044709595959088}  # means of delta time data by weekday
+EXPO_VARIABLE_PLANNED = {'Monday': 7.149544444444361,
+                         'Tuesday': 8.849943094135723,
+                         'Wednesday': 10.240050154321109,
+                         'Thursday': 7.494862298195766,
+                         'Friday': 12.161566901408305,
+                         'Saturday': 28.055376344085566,
+                         'Sunday': 19.7370454545469488}  # means of delta time data by weekday
 
 
 def new_patient_interval(isPlanned, weekday):
-    if (isPlanned):
+    if isPlanned:
         return np.random.exponential(EXPO_VARIABLE_PLANNED[weekday])
     else:
         return np.random.exponential(EXPO_VARIABLE_UNPLANNED_W_DENIED)
 
 
+def new_COVID_patient_interval():
+    return np.random.exponential(SETTINGS.EXPO_VARIABLE_COVID)
+
+
 # Time on ICU
 # Return value in HOURS
-CALC_MU = 3.50502901187668
-CALC_SIGMA = 1.3165461050924663
+SPECIALISM_MU_SIGMA = {'CAPU': [3.115982878864364, 1.060593768052976],
+                       'CHIR': [3.6608192784174287, 1.3846954607518251],
+                       'CARD': [3.8800439044710857, 1.2214170976049434],
+                       'INT': [3.6670020007750534, 1.4417975989081482],
+                       'NEC': [1.2260060537089816, 3.8992934240491044],
+                       'NEU': [3.5704887322586423, 1.4195116678759554],
+                       'OTHER': [3.3772253052032912, 1.2894040353499023]}
 
 
-def new_prodecure_length():
-    return np.random.lognormal(CALC_MU, CALC_SIGMA)
+def new_prodecure_length(specialism):
+    return np.random.lognormal(SPECIALISM_MU_SIGMA[specialism][0], SPECIALISM_MU_SIGMA[specialism][1])
+
+
+COVID_MU_SIGMA = [8]
+
+
+def new_prodecure_COVID_length():
+    return np.random.exponential(COVID_MU_SIGMA)
 
 
 # Planned patient illness distribution by weekday
@@ -52,7 +68,7 @@ EXPO_VARIABLE_PLANNED_ILLNESS = {
 
 # Generate specialism
 def new_specialism(isPlanned, weekday):
-    if (isPlanned):
+    if isPlanned:
         distribution = EXPO_VARIABLE_PLANNED_ILLNESS[weekday]
         return random.choices(list(distribution.keys()), weights=tuple(distribution.values()))[0]
     else:
@@ -121,7 +137,7 @@ class Patient:
     def should_be_discharged(self):
         return self.hoursToGo < 0
 
-    def department(self):  #------------ write test ----------
+    def department(self):
         for dep in SETTINGS.departments:
             if self.specialism in dep:
                 return dep
@@ -192,14 +208,29 @@ def new_patient_schedule_stack_new():
 
 # PATIENT FACTORY METHOD
 def new_patient(isPlanned, weekday) -> Patient:
-    # Get stay length
-    hoursToGo = new_prodecure_length()
-
     # Get specialism
     specialism = new_specialism(isPlanned, weekday)
 
+    # Get stay length
+    hoursToGo = new_prodecure_length(specialism)
+
     # Create patient
     patient = Patient(isPlanned, hoursToGo, specialism)
+
+    # Return patient
+    return patient
+
+
+# COVID PATIENT FACTORY METHOD
+def new_COVID_patient():
+    # Set specialism
+    specialism = 'COVID'
+
+    # Get stay length
+    hoursToGo = new_prodecure_COVID_length()
+
+    # Create patient
+    patient = Patient(False, hoursToGo, specialism)
 
     # Return patient
     return patient
