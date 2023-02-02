@@ -18,10 +18,17 @@ class BaseAnimator:
     fig: plt.Figure
     pos_in_row: int
     pos_in_col: int
+    this_ax: Union[plt.Axes, Axes3D]
 
     def __init__(self, pos_in_row: int, pos_in_col: int):
         self.pos_in_row = pos_in_row
         self.pos_in_col = pos_in_col
+
+        try:
+            self.this_ax = self.ax[self.pos_in_row, self.pos_in_col]
+        except AttributeError as attr_error:
+            print("The base class has not been setup yet. Try using BaseAnimator.setup() first.")
+            raise attr_error
 
     @classmethod
     def setup(cls, n_cols: int, n_rows: int, figsize: Tuple[int, int]) -> None:
@@ -53,14 +60,12 @@ class LineAnimator(BaseAnimator):
         """
         Plots a new point based on an x and y coordinate.
         """
-        ax: plt.Axes = self.ax[self.pos_in_row, self.pos_in_col]
-
         self.x.append(x_coord)
         self.y.append(y_coord)
 
-        ax.clear()
-        ax.plot(self.x, self.y)
-        ax.set_xlim(left=0, right=self.x_lim)
+        self.this_ax.clear()
+        self.this_ax.plot(self.x, self.y)
+        self.this_ax.set_xlim(left=0, right=self.x_lim)
 
         # When data that should be plotted is supplied before the previous step has been plotted the UI will crash.
         # plt.pause() will make sure there is enough time to plot.
@@ -82,7 +87,6 @@ class MatrixAnimator(BaseAnimator):
         self.grid_size = grid_size
 
     def plot(self, icu_beds: List[IcuBed]):
-        ax: plt.Axes = self.ax[self.pos_in_row, self.pos_in_col]
         bed_occupancy: np.ndarray = np.zeros(self.grid_size)
         x: int
         y: int
@@ -93,12 +97,12 @@ class MatrixAnimator(BaseAnimator):
 
             bed_occupancy[x][y] = self.get_grid_color(bed)
 
-        ax.clear()
-        ax.grid(which='major', axis='both', linestyle='-', color='k', linewidth=2)
-        ax.set_xticks(np.arange(-.5, self.grid_size[0], 1))
-        ax.set_yticks(np.arange(-.5, self.grid_size[1], 1))
+        self.this_ax.clear()
+        self.this_ax.grid(which='major', axis='both', linestyle='-', color='k', linewidth=2)
+        self.this_ax.set_xticks(np.arange(-.5, self.grid_size[0], 1))
+        self.this_ax.set_yticks(np.arange(-.5, self.grid_size[1], 1))
 
-        ax.imshow(bed_occupancy, cmap=self.COLOR_MAP)
+        self.this_ax.imshow(bed_occupancy, cmap=self.COLOR_MAP)
 
     def get_grid_color(self, bed: IcuBed):
         if bed.is_occupied():
@@ -128,8 +132,6 @@ class VoxelAnimator(BaseAnimator):
         self.ax[pos_in_row, pos_in_col] = self.fig.add_subplot(2, 2, 2, projection='3d')
 
     def plot(self, icu_beds: List[IcuBed]):
-        ax: Axes3D = self.ax[self.pos_in_row, self.pos_in_col]
-
         bed_occup_array_3d = np.zeros((self.grid_x_y, self.grid_x_y, self.grid_z))
 
         # convert to 3d array
@@ -141,8 +143,8 @@ class VoxelAnimator(BaseAnimator):
             for z in range(20):
                 bed_occup_array_3d[x][y][z] = self.display_voxel(bed, z)
 
-        ax.clear()
-        ax.voxels(bed_occup_array_3d, edgecolor='k')
+        self.this_ax.clear()
+        self.this_ax.voxels(bed_occup_array_3d, edgecolor='k')
 
     def display_voxel(self, bed: IcuBed, voxel_level: int) -> bool:
         """
@@ -169,13 +171,11 @@ class BarAnimator(BaseAnimator):
     """
 
     def plot(self, values: List[ScheduledPatient]):
-        ax: plt.Axes = self.ax[self.pos_in_row, self.pos_in_col]
-
         rescheduled = [x for x in values if x.has_been_rescheduled]
         rescheduled.sort(key=lambda x: -x.patient_waiting_time)
 
         x_axis = range(len(rescheduled))
         y_axis = [x.patient_waiting_time for x in rescheduled]
 
-        ax.clear()
-        ax.bar(x_axis, y_axis)
+        self.this_ax.clear()
+        self.this_ax.bar(x_axis, y_axis)
