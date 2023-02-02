@@ -56,6 +56,10 @@ class LineAnimator(BaseAnimator):
 
         self.x_lim = x_lim
 
+        self.this_ax.set_title("Aantal bezette bedden per tijdsstap")
+        self.this_ax.set_xlabel("Tijdsstap")
+        self.this_ax.set_ylabel("Aantal bedden")
+
     def plot(self, x_coord: Union[int, float], y_coord: Union[int, float]):
         """
         Plots a new point based on an x and y coordinate.
@@ -85,6 +89,9 @@ class MatrixAnimator(BaseAnimator):
         super().__init__(pos_in_row, pos_in_col)
 
         self.grid_size = grid_size
+
+        self.this_ax.set_title("Specialisatie per bezette bed")
+        self.this_ax.legend()
 
     def plot(self, icu_beds: List[IcuBed]):
         bed_occupancy: np.ndarray = np.zeros(self.grid_size)
@@ -129,7 +136,10 @@ class VoxelAnimator(BaseAnimator):
         self.grid_z = grid_z
         self.max_hours_in_icu = max_hours_in_icu
 
-        self.ax[pos_in_row, pos_in_col] = self.fig.add_subplot(2, 2, 2, projection='3d')
+        self.this_ax = self.fig.add_subplot(2, 2, 2, projection='3d')
+
+        self.this_ax.set_title("Huidige bezettijd per bed")
+        self.this_ax.set_zlabel("Bezettijd in (simulatie lengte / 20)")
 
     def plot(self, icu_beds: List[IcuBed]):
         bed_occup_array_3d = np.zeros((self.grid_x_y, self.grid_x_y, self.grid_z))
@@ -169,6 +179,11 @@ class BarAnimator(BaseAnimator):
     A barchart which displays the amount people have been rescheduled on the x-axis and the amount of people that have
     been rescheduled on the y-axis.
     """
+
+    def __init__(self, pos_in_row: int, pos_in_col: int):
+        super().__init__(pos_in_row, pos_in_col)
+
+        self.this_ax.set_title("???")
 
     def plot(self, values: List[ScheduledPatient]):
         rescheduled = [x for x in values if x.has_been_rescheduled]
