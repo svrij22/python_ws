@@ -39,12 +39,14 @@ def monte_carlo():
             # calculate the amount of covid patients
             covid_patients = normal_patient_amount * covid_multiplier
             settings = Settings(bed_amount=i, covid_amount=covid_patients, department_distribution=distribution)
-
             icu_ending = run(settings)  # run icu with the specified distribution and covid amount
             covid_multiplier += 0.1  # for each time the amount of beds expent to covid mutipler go's up
 
             # save stats of icu
-            dep_distribution.append(distribution)
+            covid_beds = i - sum(combi)  # calculate the amount of covid beds and add to combi
+            combi.append(covid_beds)
+
+            dep_distribution.append(combi)
             bed_amount.append(expanding_beds)
             denied.append(icu_ending.stat_patients_DENIED)
             covid_denied.append(icu_ending.stat_covid_DENIED)
@@ -55,7 +57,7 @@ def monte_carlo():
             succesful_reschedules.append(icu_ending.stat_succesful_RESCHEDULES)
 
         # show progress
-        print(f'at {(combinations.index(combi) + 1) / (len(combinations) + 1) * 100}%')
+        print(f'at {(combinations.index(combi) + 1) / (len(combinations) + 1) * 100} %')
 
     data = {
         'distribution': dep_distribution, 'bed_amount': bed_amount, 'denied': denied,
@@ -77,7 +79,7 @@ def all_combinations():
 
     for dis in distribution:
         dis = list(dis)
-        if 20 < sum(dis) <= 28:
+        if 20 < sum(dis) <= 21:
             combinations.append(dis)
 
     return combinations
