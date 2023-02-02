@@ -75,17 +75,17 @@ def all_combinations():
     print(f'making combinations of beds distributions')
     combinations = []
 
-    distribution = it.product(range(min_beds_for_department, min_beds - 3 * min_beds_for_department),
+    # make distributions
+    distribution = it.product(range(min_beds_for_department, min_beds - 3 * min_beds_for_department),  # makes distributions where there are 4 values between 4 and 16
                               repeat=len(departments) - 1)
 
+    # filter out not needed distributions
     for dis in distribution:
         dis = list(dis)
-        if 20 < sum(dis) <= 28:
+        if 20 < sum(dis) <= 28:  # only distributions where the sum is between 20 and 29
             combinations.append(dis)
 
     return combinations
 
 
 monte_carlo()
-
-
