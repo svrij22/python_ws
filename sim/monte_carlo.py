@@ -79,7 +79,7 @@ def all_combinations():
 
     for dis in distribution:
         dis = list(dis)
-        if 20 < sum(dis) <= 21:
+        if 20 < sum(dis) <= 28:
             combinations.append(dis)
 
     return combinations
