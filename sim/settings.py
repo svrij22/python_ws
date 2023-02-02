@@ -11,7 +11,7 @@ class Settings:
         self.max_beds = 50
 
         # normal amount of patients without covid
-        self.normal_patient_amount = 5890
+        self.normal_patient_amount = 4399
 
         # Define properties for reservations. The first on is the maximum amount of reservations, the second is the
         # max time. E.g if in the next 8 hours 4 people will undergo surgery, 4 beds will be kept free

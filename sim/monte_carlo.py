@@ -47,7 +47,7 @@ def monte_carlo():
             combi.append(covid_beds)
 
             dep_distribution.append(combi)
-            bed_amount.append(expanding_beds)
+            bed_amount.append(i)
             denied.append(icu_ending.stat_patients_DENIED)
             covid_denied.append(icu_ending.stat_covid_DENIED)
             waiting_time.append(icu_ending.stat_total_waiting_time)
@@ -59,6 +59,7 @@ def monte_carlo():
         # show progress
         print(f'at {(combinations.index(combi) + 1) / (len(combinations) + 1) * 100} %')
 
+    # save data to a csv
     data = {
         'distribution': dep_distribution, 'bed_amount': bed_amount, 'denied': denied,
         'covid_denied': covid_denied, 'waiting_time': waiting_time, 'occupancy': occupancy,
