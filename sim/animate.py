@@ -56,10 +56,6 @@ class LineAnimator(BaseAnimator):
 
         self.x_lim = x_lim
 
-        self.this_ax.set_title("Aantal bezette bedden per tijdsstap")
-        self.this_ax.set_xlabel("Tijdsstap")
-        self.this_ax.set_ylabel("Aantal bedden")
-
     def plot(self, x_coord: Union[int, float], y_coord: Union[int, float]):
         """
         Plots a new point based on an x and y coordinate.
@@ -70,6 +66,10 @@ class LineAnimator(BaseAnimator):
         self.this_ax.clear()
         self.this_ax.plot(self.x, self.y)
         self.this_ax.set_xlim(left=0, right=self.x_lim)
+
+        self.this_ax.set_title("Aantal bezette bedden per tijdsstap")
+        self.this_ax.set_xlabel("Tijdsstap")
+        self.this_ax.set_ylabel("Aantal bedden")
 
         # When data that should be plotted is supplied before the previous step has been plotted the UI will crash.
         # plt.pause() will make sure there is enough time to plot.
@@ -90,9 +90,6 @@ class MatrixAnimator(BaseAnimator):
 
         self.grid_size = grid_size
 
-        self.this_ax.set_title("Specialisatie per bezette bed")
-        self.this_ax.legend()
-
     def plot(self, icu_beds: List[IcuBed]):
         bed_occupancy: np.ndarray = np.zeros(self.grid_size)
         x: int
@@ -110,6 +107,8 @@ class MatrixAnimator(BaseAnimator):
         self.this_ax.set_yticks(np.arange(-.5, self.grid_size[1], 1))
 
         self.this_ax.imshow(bed_occupancy, cmap=self.COLOR_MAP)
+
+        self.this_ax.set_title("Specialisatie per bezette bed")
 
     def get_grid_color(self, bed: IcuBed):
         if bed.is_occupied():
@@ -138,9 +137,6 @@ class VoxelAnimator(BaseAnimator):
 
         self.this_ax = self.fig.add_subplot(2, 2, 2, projection='3d')
 
-        self.this_ax.set_title("Huidige bezettijd per bed")
-        self.this_ax.set_zlabel("Bezettijd in (simulatie lengte / 20)")
-
     def plot(self, icu_beds: List[IcuBed]):
         bed_occup_array_3d = np.zeros((self.grid_x_y, self.grid_x_y, self.grid_z))
 
@@ -155,6 +151,9 @@ class VoxelAnimator(BaseAnimator):
 
         self.this_ax.clear()
         self.this_ax.voxels(bed_occup_array_3d, edgecolor='k')
+
+        self.this_ax.set_title("Huidige bezettijd per bed")
+        self.this_ax.set_zlabel("Bezettijd in (simulatie lengte / 20)")
 
     def display_voxel(self, bed: IcuBed, voxel_level: int) -> bool:
         """
@@ -179,11 +178,6 @@ class BarAnimator(BaseAnimator):
     A barchart which displays the amount people have been rescheduled on the x-axis and the amount of people that have
     been rescheduled on the y-axis.
     """
-
-    def __init__(self, pos_in_row: int, pos_in_col: int):
-        super().__init__(pos_in_row, pos_in_col)
-
-        self.this_ax.set_title("???")
 
     def plot(self, values: List[ScheduledPatient]):
         rescheduled = [x for x in values if x.has_been_rescheduled]
