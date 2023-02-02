@@ -61,7 +61,7 @@ class DataTests(unittest.TestCase):
         g_mean_rounded = numpy.round(g_mean, 1)
 
         # assert
-        self.assertAlmostEqual(g_mean_rounded, patient.SETTINGS.EXPO_VARIABLE_COVID, 0)
+        self.assertAlmostEqual(g_mean_rounded, patient.default_settings.EXPO_VARIABLE_COVID, 0)
 
     def test_interval_planned_amount(self):
         for x in range(10):

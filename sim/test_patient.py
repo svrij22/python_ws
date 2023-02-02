@@ -22,7 +22,7 @@ class DataTests(unittest.TestCase):
         nPatient.hours_has_passed(5600)
         self.assertEqual(nPatient.should_be_discharged(), True)
 
-    departments = ['CARD/INT/OTHER', 'NEU/NEC', 'CAPU', 'CHIR']
+    departments = ['CARD/INT/OTHER', 'NEU/NEC', 'CAPU', 'CHIR', 'COVID']
 
     def test_specialism_gives_right_department_CARD(self):
         nPatient = patient.Patient(True, 0, 'CARD')
@@ -54,7 +54,7 @@ class DataTests(unittest.TestCase):
 
     def test_create_new_COVID_patient(self):
         nPatient = patient.new_COVID_patient()
-        self.assertEqual(nPatient.department(), 'COVID')
+        self.assertEqual(nPatient.department(), self.departments[4])
 
 
 if __name__ == '__main__':

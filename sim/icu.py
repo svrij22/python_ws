@@ -59,7 +59,7 @@ class IcuBed:
 
 class IcuDepartment:
 
-    def __init__(self, department_dis):
+    def __init__(self, settings):
         """
         Initialize an ICU department object with empty schedules stack, settings, beds, specialism distribution and statistics
         """
@@ -67,20 +67,20 @@ class IcuDepartment:
         self.schedules_stack = patient.new_patient_schedule_stack()
 
         # INIT settings
-        self.settings: Settings = Settings()
+        self.settings = settings
 
         # INIT BEDS
         self.ICUBeds: typing.List[IcuBed] = []
         for x in range(self.settings.amount_of_icu_beds):
             self.ICUBeds.append(IcuBed())
 
-        self.department_distribution = department_dis
-        self.department_distribution['COVID'] = self.settings.amount_of_icu_beds - sum(self.department_distribution.values())
+        self.department_distribution = self.settings.department_distribution
 
         # INIT STATS
         self.stat_total_waiting_time: int = 0  # hours
         self.stat_patients_RESCHEDULED: int = 0
         self.stat_patients_DENIED: int = 0
+        self.stat_covid_DENIED: int = 0
         self.stat_patients_ADMISSIONED: int = 0
         self.stat_failed_RESCHEDULES: int = 0
         self.stat_succesful_RESCHEDULES: int = 0
@@ -100,6 +100,8 @@ class IcuDepartment:
         if count >= self.department_distribution[department]:
             return False
         else:
+            if self.department_distribution[department] == 'COVID':
+                print(count)
             return True
 
     def perc_avail(self) -> float:
@@ -177,7 +179,6 @@ class IcuDepartment:
                 return
 
     def try_adm_patient(self, patient: Patient):
-
         # Has space?
         if self.has_space(patient.department()):
 
@@ -187,6 +188,9 @@ class IcuDepartment:
             return True
         else:
 
+            if patient.department() == 'COVID':
+                self.stat_covid_DENIED += 1
+                return False
             # denied
             if not patient.isPlanned:
                 self.stat_patients_DENIED += 1
@@ -208,7 +212,7 @@ class IcuDepartment:
         for sched in self.schedules_stack:
 
             # add to total waiting time
-            if (sched.has_been_rescheduled):
+            if sched.has_been_rescheduled:
                 self.stat_total_waiting_time += self.settings.step_size_hour
                 sched.patient_waiting_time += self.settings.step_size_hour
 
@@ -216,10 +220,10 @@ class IcuDepartment:
             sched.hours_has_passed(self.settings.step_size_hour)
 
             # if schedule hours to go is lower than 0
-            if (sched.hoursToGo <= 0):
+            if sched.hoursToGo <= 0:
 
                 # check if should be rescheduled
-                if (sched.should_be_executed()):
+                if sched.should_be_executed():
                     # add attempts and try
                     self.try_execute_schedule(sched)
 
@@ -231,17 +235,17 @@ class IcuDepartment:
 
         # try add patient
         is_succesful = self.try_adm_patient(scheduled_p.patient)
-        if (is_succesful):
+        if is_succesful:
 
             # remove and add var
-            scheduled_p.remove_me = True;
+            scheduled_p.remove_me = True
 
             # if is rescheduled
-            if (scheduled_p.has_been_rescheduled):
-                self.stat_succesful_RESCHEDULES += 1;
+            if scheduled_p.has_been_rescheduled:
+                self.stat_succesful_RESCHEDULES += 1
 
             # ===============DEBUG==================
-            if (self.settings.display_debug_msgs):
+            if self.settings.display_debug_msgs:
                 print('Scheduled patient admissioned')
 
         else:
@@ -250,16 +254,16 @@ class IcuDepartment:
             scheduled_p.reschedule(self.settings.hours_between_reschedule)
 
             # BUT if max attempts reached, remove it
-            if (scheduled_p.attempts == self.settings.max_allowed_reschedule_attempts):
+            if scheduled_p.attempts == self.settings.max_allowed_reschedule_attempts:
 
                 # remove and add var
                 scheduled_p.remove_me = True
-                self.stat_failed_RESCHEDULES += 1;
-                self.stat_patients_DENIED += 1;
+                self.stat_failed_RESCHEDULES += 1
+                self.stat_patients_DENIED += 1
 
                 # ===============DEBUG==================
-                if (self.settings.display_debug_msgs):
+                if self.settings.display_debug_msgs:
                     print('Scheduled patient reached max admission attempts')
 
             else:
-                self.stat_patients_RESCHEDULED += 1;
+                self.stat_patients_RESCHEDULED += 1

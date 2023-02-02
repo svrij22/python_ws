@@ -3,10 +3,11 @@ import random
 
 import numpy as np
 
-from settings import Settings
 
 # Create settings const
-SETTINGS = Settings()
+from settings import Settings
+
+default_settings = Settings()
 
 # INTERVAL unplanned
 EXPO_VARIABLE_UNPLANNED = 6.402049279835394  # mean of delta time data
@@ -29,8 +30,8 @@ def new_patient_interval(isPlanned, weekday):
         return np.random.exponential(EXPO_VARIABLE_UNPLANNED_W_DENIED)
 
 
-def new_COVID_patient_interval():
-    return np.random.exponential(SETTINGS.EXPO_VARIABLE_COVID)
+def new_COVID_patient_interval(EXPO_VARIABLE_COVID):
+    return np.random.exponential(EXPO_VARIABLE_COVID)
 
 
 # Time on ICU
@@ -138,7 +139,7 @@ class Patient:
         return self.hoursToGo < 0
 
     def department(self):
-        for dep in SETTINGS.departments:
+        for dep in default_settings.department_distribution.keys():
             if self.specialism in dep:
                 return dep
 
@@ -154,7 +155,7 @@ weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 
 
 def new_patient_schedule_stack():
     # calc hours
-    total_hours_togo = SETTINGS.simulator_days * 24
+    total_hours_togo = default_settings.simulator_days * 24
     current_hour = 0
 
     # define list
@@ -186,7 +187,7 @@ def new_patient_schedule_stack_new():
     for day in weekdays:
 
         # calc hours
-        day_hours_togo = SETTINGS.simulator_days * 24 / 7
+        day_hours_togo = default_settings.simulator_days * 24 / 7
         current_hour = 0
 
         while day_hours_togo >= 0:

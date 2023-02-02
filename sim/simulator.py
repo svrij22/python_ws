@@ -3,31 +3,31 @@ from animate import LineAnimator, MatrixAnimator, VoxelAnimator, BaseAnimator, B
 from icu import IcuDepartment
 from settings import Settings
 
-# Create ICU
-settings = Settings()
-sICU = IcuDepartment({'CARD/INT/OTHER': 7, 'NEU/NEC': 8, 'CAPU': 8, 'CHIR': 4})
+# patient intervals
+interval_NEXT_PATIENT_stack = 0
+interval_NEXT_COVID_PATIENT_stack = 0
 
+<<<<<<< Updated upstream
 if sICU.department_distribution['COVID'] < 0:
     raise Exception(f"department distribution has to many beds: {sICU.department_distribution['COVID'] * -1}")
 
 # Define the current hour of the simulation
+=======
+# simulation stats
+>>>>>>> Stashed changes
 current_HOUR = 0
 stat_unplanned = 0
 stat_COVID = 0
 
-# Define the interval between current and the next patient
-interval_NEXT_PATIENT_stack = patient.new_patient_interval(False, None)
-interval_NEXT_COVID_PATIENT_stack = patient.new_COVID_patient_interval()
-
 
 # Define the step() method
-def step():
+def step(sICU: IcuDepartment):
     global current_HOUR, interval_NEXT_PATIENT_stack, interval_NEXT_COVID_PATIENT_stack, stat_unplanned, stat_COVID
 
     # TIME LOGIC
-    current_HOUR += settings.step_size_hour
-    interval_NEXT_PATIENT_stack -= settings.step_size_hour
-    interval_NEXT_COVID_PATIENT_stack -= settings.step_size_hour
+    current_HOUR += sICU.settings.step_size_hour
+    interval_NEXT_PATIENT_stack -= sICU.settings.step_size_hour
+    interval_NEXT_COVID_PATIENT_stack -= sICU.settings.step_size_hour
 
     # subtract hours from IcuDept
     sICU.hours_has_passed()
@@ -46,7 +46,7 @@ def step():
         stat_unplanned += 1
 
         # ===============DEBUG==================
-        if settings.display_debug_msgs:
+        if sICU.settings.display_debug_msgs:
             print('next patient : {} hours'.format(str(new_patient_interval)))
 
         # Create patient
@@ -58,14 +58,14 @@ def step():
     while interval_NEXT_COVID_PATIENT_stack <= 0:
 
         # Set new interval
-        new_patient_interval = patient.new_COVID_patient_interval()
+        new_patient_interval = patient.new_COVID_patient_interval(sICU.settings.EXPO_VARIABLE_COVID)
         interval_NEXT_COVID_PATIENT_stack += new_patient_interval
 
-        # add unplanned
+        # +1 Covid patient
         stat_COVID += 1
 
         # ===============DEBUG==================
-        if settings.display_debug_msgs:
+        if sICU.settings.display_debug_msgs:
             print('next patient : {} hours'.format(str(new_patient_interval)))
 
         # Create patient
@@ -75,12 +75,22 @@ def step():
         sICU.try_adm_patient(nPatient)
 
 
-# Define sim vars
-vIS_STEPS = int((settings.simulator_days * 24) / settings.step_size_hour)
-
-
 # run
+<<<<<<< Updated upstream
 def run():
+=======
+def run(settings: Settings):
+    global interval_NEXT_PATIENT_stack, interval_NEXT_COVID_PATIENT_stack, current_HOUR, stat_unplanned, stat_COVID
+
+    # set amount of steps
+    vIS_STEPS = int((settings.simulator_days * 24) / settings.step_size_hour)
+    # Create ICU
+    sICU = IcuDepartment(settings)
+
+    # Define the interval between current and the next patient
+    interval_NEXT_PATIENT_stack = patient.new_patient_interval(False, None)
+    interval_NEXT_COVID_PATIENT_stack = patient.new_COVID_patient_interval(settings.EXPO_VARIABLE_COVID)
+>>>>>>> Stashed changes
     # if animator
     if settings.animator_enabled:
         BaseAnimator.setup(2, 2, (10, 8))
@@ -94,14 +104,17 @@ def run():
     for step_var in range(vIS_STEPS):
 
         # run step
-        step()
+        step(sICU)
 
         if settings.animator_enabled and step_var % settings.plot_graph_interval == 0:
             current_occupancy_animator.plot(step_var, sICU.occupied_num())
             occupancy_by_specialism_animator.plot(sICU.ICUBeds)
             occupancy_by_time_spent.plot(sICU.ICUBeds)
             n_patients_rescheduled.plot(sICU.schedules_stack)
+<<<<<<< Updated upstream
             # animator.plot_rescheduled(sICU.schedules_stack)
+=======
+>>>>>>> Stashed changes
 
         # ===============DEBUG==================
         # state msgs
@@ -109,9 +122,12 @@ def run():
             # desc state short
             sICU.describe_state_short()
 
+    return sICU
 
-def stats():
+
+def stats(sICU):
     print("patients denied: " + str(sICU.stat_patients_DENIED))
+    print("covid patients denied: " + str(sICU.stat_covid_DENIED))
     print("patients adm: " + str(sICU.stat_patients_ADMISSIONED))
     print("patients rescheduled: " + str(sICU.stat_patients_RESCHEDULED))
 
@@ -122,10 +138,11 @@ def stats():
     print("succesful reschedules: " + str(sICU.stat_succesful_RESCHEDULES))
 
     print("patients (planned): " + str(sICU.stat_planned))
+    print("patients (COVID): " + str(stat_COVID))
     print("patients (unplanned): " + str(stat_unplanned))
 
 
-run()
-stats()
+stats(run(Settings()))
 
-input("Press enter to exit.")
+#input("Press enter to exit.")
+
