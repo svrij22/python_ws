@@ -40,4 +40,4 @@ class Settings:
         # == Animation Settings == 
         # Set the amount of steps that have to pass before a new point is plotted
         self.plot_graph_interval = 15  # default 15
-        self.animator_enabled = True
+        self.animator_enabled = False

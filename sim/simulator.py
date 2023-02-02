@@ -7,14 +7,8 @@ from settings import Settings
 interval_NEXT_PATIENT_stack = 0
 interval_NEXT_COVID_PATIENT_stack = 0
 
-<<<<<<< Updated upstream
-if sICU.department_distribution['COVID'] < 0:
-    raise Exception(f"department distribution has to many beds: {sICU.department_distribution['COVID'] * -1}")
-
 # Define the current hour of the simulation
-=======
 # simulation stats
->>>>>>> Stashed changes
 current_HOUR = 0
 stat_unplanned = 0
 stat_COVID = 0
@@ -76,9 +70,6 @@ def step(sICU: IcuDepartment):
 
 
 # run
-<<<<<<< Updated upstream
-def run():
-=======
 def run(settings: Settings):
     global interval_NEXT_PATIENT_stack, interval_NEXT_COVID_PATIENT_stack, current_HOUR, stat_unplanned, stat_COVID
 
@@ -90,7 +81,7 @@ def run(settings: Settings):
     # Define the interval between current and the next patient
     interval_NEXT_PATIENT_stack = patient.new_patient_interval(False, None)
     interval_NEXT_COVID_PATIENT_stack = patient.new_COVID_patient_interval(settings.EXPO_VARIABLE_COVID)
->>>>>>> Stashed changes
+
     # if animator
     if settings.animator_enabled:
         BaseAnimator.setup(2, 2, (10, 8))
@@ -111,14 +102,10 @@ def run(settings: Settings):
             occupancy_by_specialism_animator.plot(sICU.ICUBeds)
             occupancy_by_time_spent.plot(sICU.ICUBeds)
             n_patients_rescheduled.plot(sICU.schedules_stack)
-<<<<<<< Updated upstream
-            # animator.plot_rescheduled(sICU.schedules_stack)
-=======
->>>>>>> Stashed changes
 
-        # ===============DEBUG==================
+
         # state msgs
-        if (settings.display_debug_msgs):
+        if settings.display_debug_msgs:
             # desc state short
             sICU.describe_state_short()
 
@@ -142,7 +129,7 @@ def stats(sICU):
     print("patients (unplanned): " + str(stat_unplanned))
 
 
-stats(run(Settings()))
+#stats(run(Settings()))
 
 #input("Press enter to exit.")
 

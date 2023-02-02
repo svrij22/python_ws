@@ -49,7 +49,7 @@ def new_prodecure_length(specialism):
     return np.random.lognormal(SPECIALISM_MU_SIGMA[specialism][0], SPECIALISM_MU_SIGMA[specialism][1])
 
 
-COVID_MU_SIGMA = [8]
+COVID_MU_SIGMA = 8*24 # covid patient stay at the icu 8 days as average
 
 
 def new_prodecure_COVID_length():

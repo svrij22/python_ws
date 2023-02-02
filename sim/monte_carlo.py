@@ -49,7 +49,7 @@ def monte_carlo():
             denied.append(icu_ending.stat_patients_DENIED)
             covid_denied.append(icu_ending.stat_covid_DENIED)
             waiting_time.append(icu_ending.stat_total_waiting_time)
-            occupancy.append(icu_ending.stat_total_bed_occupation / default_settings.simulator_days * 24 * 100)
+            occupancy.append(icu_ending.stat_total_bed_occupation / (default_settings.simulator_days * 24 * i) * 100)
             admissioned.append(icu_ending.stat_patients_ADMISSIONED)
             failed_reschedules.append(icu_ending.stat_failed_RESCHEDULES)
             succesful_reschedules.append(icu_ending.stat_succesful_RESCHEDULES)
