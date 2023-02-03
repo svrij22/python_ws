@@ -10,7 +10,7 @@ departments = list(default_settings.department_distribution.keys())
 max_beds = default_settings.max_beds
 min_beds = default_settings.amount_of_icu_beds
 min_beds_for_department = 4
-expanding_beds = [28]  # the amount af beds the Icu can expant to
+expanding_beds = [28, 33, 38, 43, 48, 50]  # the amount af beds the Icu can expant to
 normal_patient_amount = default_settings.normal_patient_amount
 
 
@@ -43,10 +43,8 @@ def monte_carlo():
             covid_multiplier += 0.1  # for each time the amount of beds expent to covid mutipler go's up
 
             # save stats of icu
-            covid_beds = i - sum(combi)  # calculate the amount of covid beds and add to combi
-            combi.append(covid_beds)
-
-            dep_distribution.append(combi)
+            dis_with_covid = list(distribution.values())
+            dep_distribution.append(dis_with_covid)
             bed_amount.append(i)
             denied.append(icu_ending.stat_patients_DENIED)
             covid_denied.append(icu_ending.stat_covid_DENIED)
@@ -55,6 +53,7 @@ def monte_carlo():
             admissioned.append(icu_ending.stat_patients_ADMISSIONED)
             failed_reschedules.append(icu_ending.stat_failed_RESCHEDULES)
             succesful_reschedules.append(icu_ending.stat_succesful_RESCHEDULES)
+            print(dep_distribution)
 
         # show progress
         print(f'at {(combinations.index(combi) + 1) / (len(combinations) + 1) * 100} %')
